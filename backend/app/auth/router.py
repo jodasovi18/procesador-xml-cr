@@ -6,6 +6,7 @@ from app.db import get_db
 from app.models.usuario import Usuario
 from app.auth.security import verify_password, create_access_token, hash_password
 from app.schemas.auth import Token
+from app.auth.deps import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -24,3 +25,7 @@ def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
                             headers={"WWW-Authenticate": "Bearer"})
     token = create_access_token(sub=usuario.nombre)
     return Token(access_token=token)
+
+@router.get("/me")
+def me(usuario: Usuario = Depends(get_current_user)):
+    return {"id": usuario.id, "nombre": usuario.nombre, "es_admin": usuario.es_admin}
