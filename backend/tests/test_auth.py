@@ -12,7 +12,8 @@ def test_login_correcto_devuelve_token(client, db_session):
     assert resp.status_code == 200
     body = resp.json()
     assert body["token_type"] == "bearer"
-    assert isinstance(body["access_token"], str) and len(body["access_token"]) > 20
+    assert isinstance(body["access_token"], str)
+    assert body["access_token"].count(".") == 2  # estructura JWT: header.payload.signature
 
 def test_login_password_incorrecta_401(client, db_session):
     _crear_usuario(db_session)
