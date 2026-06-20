@@ -33,3 +33,10 @@ def test_codigo_01_exento():
     t = tratamiento_linea("01", Decimal("0"))
     assert t.label == "Exento"
     assert t.es_no_sujeto is False
+
+def test_exoneracion_mayor_que_tarifa_da_exento():
+    # exon (15%) > tarifa (13%) -> el guard max(0, ...) clampea a 0, no negativo
+    t = tratamiento_linea("08", Decimal("13"), Decimal("15"))
+    assert t.label == "Exento"
+    assert t.pct_efectiva == Decimal("0")
+    assert t.es_no_sujeto is False
