@@ -19,6 +19,7 @@ class LineaParsed(BaseModel):
     iva_neto: Decimal = Decimal("0")
     exon_tarifa: Decimal = Decimal("0")
     exon_monto: Decimal = Decimal("0")
+    tipo: str = ""   # Bienes | Servicios (lo asigna apply_transforms)
 
 
 class ComprobanteParsed(BaseModel):
