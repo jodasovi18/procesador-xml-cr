@@ -58,3 +58,26 @@ def test_ingesta_sin_token_401(client):
     with open(FIXT / "fe_almacen_leon.xml", "rb") as fh:
         r = client.post("/api/ingesta", files={"archivo": ("x.xml", fh, "application/xml")})
     assert r.status_code == 401
+
+def test_ingesta_idempotente_no_duplica_lineas(client, db_session):
+    token = _token(client, db_session)
+    _cliente_agrofinca(db_session)
+    _subir(client, token, FIXT / "fe_almacen_leon.xml")
+    _subir(client, token, FIXT / "fe_almacen_leon.xml")
+    from sqlalchemy import select
+    comp = db_session.scalar(select(Comprobante).where(
+        Comprobante.clave == "50604052600310103004200100001010000324943131803899"))
+    assert len(comp.lineas) == 1   # la reingesta no deja líneas huérfanas
+
+def test_ingesta_omite_mensaje_hacienda(client, db_session):
+    token = _token(client, db_session)
+    r = _subir(client, token, FIXT / "mensaje_hacienda.xml")
+    assert r.status_code == 200
+    assert r.json()["omitido"] is True
+
+def test_ingesta_xml_invalido_422(client, db_session):
+    token = _token(client, db_session)
+    r = client.post("/api/ingesta",
+                    files={"archivo": ("malo.xml", b"esto no es xml", "application/xml")},
+                    headers={"Authorization": f"Bearer {token}"})
+    assert r.status_code == 422
