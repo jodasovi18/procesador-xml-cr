@@ -7,7 +7,8 @@ from app.db import Base
 class Comprobante(Base):
     __tablename__ = "comprobantes"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    cliente_id: Mapped[int | None] = mapped_column(ForeignKey("clientes.id"), nullable=True, index=True)
+    cliente_id: Mapped[int | None] = mapped_column(
+        ForeignKey("clientes.id", ondelete="SET NULL"), nullable=True, index=True)
     clave: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     tipo_doc: Mapped[str] = mapped_column(String(40), nullable=False)
     consecutivo: Mapped[str] = mapped_column(String(30), nullable=False)
@@ -45,6 +46,8 @@ class LineaComprobante(Base):
     base_imponible: Mapped[Decimal] = mapped_column(Numeric(18, 5), default=Decimal("0"))
     tarifa_codigo: Mapped[str] = mapped_column(String(4), default="")
     tarifa_pct: Mapped[Decimal] = mapped_column(Numeric(7, 4), default=Decimal("0"))
+    tarifa_label: Mapped[str] = mapped_column(String(20), default="")   # Exento|1%|2%|4%|13%|No Sujeto (efectivo)
+    tipo: Mapped[str] = mapped_column(String(10), default="")            # Bienes|Servicios
     iva_monto: Mapped[Decimal] = mapped_column(Numeric(18, 5), default=Decimal("0"))
     clasificacion: Mapped[str | None] = mapped_column(String(40), nullable=True)
     sub_clasificacion: Mapped[str | None] = mapped_column(String(60), nullable=True)

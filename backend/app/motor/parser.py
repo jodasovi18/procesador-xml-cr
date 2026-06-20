@@ -83,6 +83,7 @@ def parse_comprobante_xml(xml_bytes: bytes) -> ComprobanteParsed:
         if ctm is not None:
             moneda = _sval(ctm, "CodigoMoneda", nsp) or "CRC"
             tc = _dval(ctm, "TipoCambio", nsp)
+            # Decimal("0") es falsy: si TipoCambio falta o es 0 se asume 1 (port del viejo `or 1.0`).
             tipo_cambio = tc if tc else Decimal("1")
 
     # ResumenFactura — totales (ported from lines 931-951, exact element names)
