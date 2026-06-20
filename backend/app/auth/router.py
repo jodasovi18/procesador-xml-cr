@@ -23,7 +23,7 @@ def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Usuario o contraseña incorrectos",
                             headers={"WWW-Authenticate": "Bearer"})
-    token = create_access_token(sub=usuario.nombre)
+    token = create_access_token(sub=str(usuario.id))
     return Token(access_token=token)
 
 @router.get("/me")
