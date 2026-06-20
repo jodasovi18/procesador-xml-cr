@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='utf-8'?>
+<FacturaElectronica xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns="https://cdn.comprobanteselectronicos.go.cr/xml-schemas/v4.4/facturaElectronica"><Clave>50616052600310285828200100001010000001555140040818</Clave><ProveedorSistemas>3102858282</ProveedorSistemas><CodigoActividadEmisor>0111.9</CodigoActividadEmisor><NumeroConsecutivo>00100001010000001555</NumeroConsecutivo><FechaEmision>2026-05-16T15:20:50</FechaEmision><Emisor><Nombre>AGROFINCA LA FLOR DE ZARCERO S&amp;C</Nombre><Identificacion><Tipo>02</Tipo><Numero>3102858282</Numero></Identificacion><NombreComercial>AGROFINCA LA FLOR DE ZARCERO SYC LIMITADA</NombreComercial><Ubicacion><Provincia>2</Provincia><Canton>11</Canton><Distrito>04</Distrito><OtrasSenas>400 metros oeste de APAMAR</OtrasSenas></Ubicacion><Telefono><CodigoPais>506</CodigoPais><NumTelefono>86637853</NumTelefono></Telefono><CorreoElectronico>agroganaderalaflor@gmail.com</CorreoElectronico></Emisor><Receptor><Nombre>Douglas Chacon Gutierrez</Nombre><Identificacion><Tipo>01</Tipo><Numero>107840245</Numero></Identificacion><CorreoElectronico>frutazarcero@gmail.com</CorreoElectronico></Receptor><CondicionVenta>01</CondicionVenta><DetalleServicio><LineaDetalle><NumeroLinea>1</NumeroLinea><CodigoCABYS>0151002020400</CodigoCABYS><CodigoComercial><Tipo>01</Tipo><Codigo>11</Codigo></CodigoComercial><Cantidad>200.000</Cantidad><UnidadMedida>Unid</UnidadMedida><TipoTransaccion>01</TipoTransaccion><Detalle>Papa Amarilla</Detalle><PrecioUnitario>311.00000</PrecioUnitario><MontoTotal>62200.00000</MontoTotal><SubTotal>62200.00000</SubTotal><BaseImponible>62200.00000</BaseImponible><Impuesto><Codigo>01</Codigo><CodigoTarifaIVA>10</CodigoTarifaIVA><Tarifa>0.00</Tarifa><Monto>0.00000</Monto></Impuesto><ImpuestoAsumidoEmisorFabrica>0.00000</ImpuestoAsumidoEmisorFabrica><ImpuestoNeto>0.00000</ImpuestoNeto><MontoTotalLinea>62200.00000</MontoTotalLinea></LineaDetalle><LineaDetalle><NumeroLinea>2</NumeroLinea><CodigoCABYS>0151002020100</CodigoCABYS><CodigoComercial><Tipo>01</Tipo><Codigo>10</Codigo></CodigoComercial><Cantidad>100.000</Cantidad><UnidadMedida>Unid</UnidadMedida><TipoTransaccion>01</TipoTransaccion><Detalle>Papa Blanca</Detalle><PrecioUnitario>311.00000</PrecioUnitario><MontoTotal>31100.00000</MontoTotal><SubTotal>31100.00000</SubTotal><BaseImponible>31100.00000</BaseImponible><Impuesto><Codigo>01</Codigo><CodigoTarifaIVA>10</CodigoTarifaIVA><Tarifa>0.00</Tarifa><Monto>0.00000</Monto></Impuesto><ImpuestoAsumidoEmisorFabrica>0.00000</ImpuestoAsumidoEmisorFabrica><ImpuestoNeto>0.00000</ImpuestoNeto><MontoTotalLinea>31100.00000</MontoTotalLinea></LineaDetalle><LineaDetalle><NumeroLinea>3</NumeroLinea><CodigoCABYS>0151002020800</CodigoCABYS><CodigoComercial><Tipo>01</Tipo><Codigo>14</Codigo></CodigoComercial><Cantidad>50.000</Cantidad><UnidadMedida>Unid</UnidadMedida><TipoTransaccion>01</TipoTransaccion><Detalle>Semilla</Detalle><PrecioUnitario>177.00000</PrecioUnitario><MontoTotal>8850.00000</MontoTotal><SubTotal>8850.00000</SubTotal><BaseImponible>8850.00000</BaseImponible><Impuesto><Codigo>01</Codigo><CodigoTarifaIVA>10</CodigoTarifaIVA><Tarifa>0.00</Tarifa><Monto>0.00000</Monto></Impuesto><ImpuestoAsumidoEmisorFabrica>0.00000</ImpuestoAsumidoEmisorFabrica><ImpuestoNeto>0.00000</ImpuestoNeto><MontoTotalLinea>8850.00000</MontoTotalLinea></LineaDetalle><LineaDetalle><NumeroLinea>4</NumeroLinea><CodigoCABYS>0125101029900</CodigoCABYS><CodigoComercial><Tipo>01</Tipo><Codigo>16</Codigo></CodigoComercial><Cantidad>100.000</Cantidad><UnidadMedida>Unid</UnidadMedida><TipoTransaccion>01</TipoTransaccion><Detalle>Zanahoria Primera</Detalle><PrecioUnitario>355.00000</PrecioUnitario><MontoTotal>35500.00000</MontoTotal><SubTotal>35500.00000</SubTotal><BaseImponible>35500.00000</BaseImponible><Impuesto><Codigo>01</Codigo><CodigoTarifaIVA>10</CodigoTarifaIVA><Tarifa>0.00</Tarifa><Monto>0.00000</Monto></Impuesto><ImpuestoAsumidoEmisorFabrica>0.00000</ImpuestoAsumidoEmisorFabrica><ImpuestoNeto>0.00000</ImpuestoNeto><MontoTotalLinea>35500.00000</MontoTotalLinea></LineaDetalle></DetalleServicio><ResumenFactura><CodigoTipoMoneda><CodigoMoneda>CRC</CodigoMoneda><TipoCambio>1.00000</TipoCambio></CodigoTipoMoneda><TotalServGravados>0.00000</TotalServGravados><TotalServExentos>0.00000</TotalServExentos><TotalServExonerado>0.00000</TotalServExonerado><TotalServNoSujeto>0.00000</TotalServNoSujeto><TotalMercanciasGravadas>0.00000</TotalMercanciasGravadas><TotalMercanciasExentas>137650.00000</TotalMercanciasExentas><TotalMercExonerada>0.00000</TotalMercExonerada><TotalMercNoSujeta>0.00000</TotalMercNoSujeta><TotalGravado>0.00000</TotalGravado><TotalExento>137650.00000</TotalExento><TotalExonerado>0.00000</TotalExonerado><TotalNoSujeto>0.00000</TotalNoSujeto><TotalVenta>137650.00000</TotalVenta><TotalDescuentos>0.00000</TotalDescuentos><TotalVentaNeta>137650.00000</TotalVentaNeta><TotalDesgloseImpuesto><Codigo>01</Codigo><CodigoTarifaIVA>10</CodigoTarifaIVA><TotalMontoImpuesto>0.00000</TotalMontoImpuesto></TotalDesgloseImpuesto><TotalImpuesto>0.00000</TotalImpuesto><TotalImpAsumEmisorFabrica>0.00000</TotalImpAsumEmisorFabrica><TotalIVADevuelto>0.00000</TotalIVADevuelto><TotalOtrosCargos>0.00000</TotalOtrosCargos><MedioPago><TipoMedioPago>01</TipoMedioPago></MedioPago><TotalComprobante>137650.00000</TotalComprobante></ResumenFactura><ds:Signature Id="xmldsig-acd120ac-34f1-4aa0-86db-982dfdd5627d">
+<ds:SignedInfo>
+<ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+<ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+<ds:Reference Id="xmldsig-acd120ac-34f1-4aa0-86db-982dfdd5627d-ref0" URI="">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>XbV11NMzHMGnAtG2H+yy/TZHcrclxyXkEYcnJw2MfEM=</ds:DigestValue>
+</ds:Reference>
+<ds:Reference URI="#xmldsig-acd120ac-34f1-4aa0-86db-982dfdd5627d-keyinfo">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>rfAQ+XYbb4hbN8M8GF8RfuZKkEECvoYQtA3RPjjYWCY=</ds:DigestValue>
+</ds:Reference>
+<ds:Reference URI="#xmldsig-acd120ac-34f1-4aa0-86db-982dfdd5627d-signedprops" Type="http://uri.etsi.org/01903#SignedProperties">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>wwnXB7hFQBT6jRFRM7Hv/urh9Xr2uf91jhWTNJ3SBCw=</ds:DigestValue>
+</ds:Reference>
+</ds:SignedInfo>
+<ds:SignatureValue Id="xmldsig-acd120ac-34f1-4aa0-86db-982dfdd5627d-sigvalue">OYLPv9jX+mmPn9qQ0iHpXzDhVQ8t0bjGY6bN+qp220V69m1yt3FHILOntI9BmhRE
+t0yxqPEa5k0PqaHNVfqFS0RRY/SaUVzNpEiIdURidonVH2nR/FRe8cGZm/l36U0J
+7LD5JlQ+0EFT+8YWcir/q+aQkP+Fl7XTzEtI98d1JNb2wOpxMiVz0YaCdWW1BRqW
+j05An1WnsM0IYOTCiCEqwkXwoqDTH46VP298WeIGqsdRYb5IHi0GcMIpe7mEDoIn
+YNG7lDBneWQwvQLHOdanUYjiyVo70gjWYwUhkX9OsHEPuZm00W4My0Rx2k9gcgLy
+g4V7PLNTijb895AeTb9wKg==</ds:SignatureValue>
+<ds:KeyInfo Id="xmldsig-acd120ac-34f1-4aa0-86db-982dfdd5627d-keyinfo">
+<ds:X509Data>
+<ds:X509Certificate>MIIFLjCCAxagAwIBAgIGAY4jXIXzMA0GCSqGSIb3DQEBCwUAMFoxCzAJBgNVBAYT
+AkNSMR8wHQYDVQQKDBZNSU5JU1RFUklPIERFIEhBQ0lFTkRBMQwwCgYDVQQLDANE
+R1QxHDAaBgNVBAMME0NBIFBFUlNPTkEgSlVSSURJQ0EwHhcNMjQwMzA5MTMxNzI5
+WhcNMjgwMzA4MTMxNzI5WjCBiDEZMBcGA1UEBRMQQ1BKLTMtMTAyLTg1ODI4MjEL
+MAkGA1UEBhMCQ1IxGTAXBgNVBAoMEFBFUlNPTkEgSlVSSURJQ0ExDDAKBgNVBAsM
+A0NQSjE1MDMGA1UEAwwsQUdST0ZJTkNBIExBIEZMT1IgREUgWkFSQ0VSTyBTICYg
+QyAgTElNSVRBREEwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCUNr6i
+nf8KN9EVH/e94l6SkRntSYvY1Sp4/ftdV6NE5YS7AaEjWjk3sg3cWDdbEaFAdlMb
+m49dKDuHddtiP/VMF9IXKhlAX/UmVdWo7BJjmGz3rxGj41cqbjQlbV66FkNRvdme
+DLCvIQ1vJumfhvuewKCB+0XH5R/yWZE1FXXgHMgZYxnb0UPwSMnrlBxw3c2SCYYC
+UfScWK2FLlHf/Jjyr+9RUfXazONUmgY+2J/qAi8jELoNfv847ikK7z7z5HVZCvXp
+9z9bLagb33+O3Xd41MgRWX8CDy0jHL9PlONs2Uh9bs0a5llonAyDc0clSG1Kjiov
+adeg9+MWaSxqL0FdAgMBAAGjgcowgccwHwYDVR0jBBgwFoAUO21X9dZ86Z4QAiBB
+470azM+zTpUwHQYDVR0OBBYEFNftNmOIv8VigXcHnmCAv9MxnvO7MAsGA1UdDwQE
+AwIGwDATBgNVHSUEDDAKBggrBgEFBQcDBDBjBggrBgEFBQcBAQRXMFUwUwYIKwYB
+BQUHMAKGR2h0dHBzOi8vcGtpLmNvbXByb2JhbnRlc2VsZWN0cm9uaWNvcy5nby5j
+ci9wcm9kL2ludGVybWVkaWF0ZS1wai1wZW0uY3J0MA0GCSqGSIb3DQEBCwUAA4IC
+AQCvnTdDrdhIlqRMk7p7RuyLKRFJbvOMWFpYM5eB46RfZgQujluZbmQ11KQ4fNru
+BUg4iV8mKjFKKNfi+Ty12JMMuBHH8tcnVLcvTA+MivyC/25YOCX1hSNyVfmMGWbL
+Ibk62C5vZBXjxOZtweZOAsYWgCUrdCur7qogmT/j08jZkaQRaLQjK5C11VvlpPnf
+g+a2TaHP0Nva9H3VZoJzWkNizaW9F6+D/zR/Q6ynw7P7a9UvaP9wJjsG5Ba45NvZ
+u9yW2COAJn8RkzFAdzSAqd6/IOFV/Hl817fLGx/LYJxi7mL5xGohq89kDKPHlqVX
+UUt1OCBnL931nvASf4Re8fwmWKuq2KqvTEp7YQU1U6eFQgoIAc+qQ4RJmCx2I+b5
+rXXclvUWJb8eOwMevzXdTeYh3T5pTaacVTKNo4pSIFh7CblEw10g1XGG+HGaEaUn
+LbrghUiVwGCgFcudg9KyQAlTd+VdDMUBbRR3qeJpj67Gqo8jN6S1RC+6DMRAs+Zm
+vq94apR/Eeb4NvlxzslCsofQywyYpktaEz5vVEcO94DKJSdAOQenXjrgZiS5q6r5
+q625dnU1SHwqkK7NY+mUJwpAb6L2F8e00wNT6/S2pn0aMx/880YIocPKiUiMYl2x
+sk/fpOE9P98eJkdJcXyXfb85GCF5KGm2Y2ZWj8neXiSsMw==</ds:X509Certificate>
+<ds:X509IssuerSerial>
+<ds:X509IssuerName>CN=CA PERSONA JURIDICA, OU=DGT, O=MINISTERIO DE HACIENDA, C=CR</ds:X509IssuerName>
+<ds:X509SerialNumber>1709990249971</ds:X509SerialNumber>
+</ds:X509IssuerSerial>
+</ds:X509Data>
+<ds:KeyValue>
+<ds:RSAKeyValue>
+<ds:Modulus>lDa+op3/CjfRFR/3veJekpEZ7UmL2NUqeP37XVejROWEuwGhI1o5N7IN3Fg3WxGh
+QHZTG5uPXSg7h3XbYj/1TBfSFyoZQF/1JlXVqOwSY5hs968Ro+NXKm40JW1euhZD
+Ub3ZngywryENbybpn4b7nsCggftFx+Uf8lmRNRV14BzIGWMZ29FD8EjJ65QccN3N
+kgmGAlH0nFithS5R3/yY8q/vUVH12szjVJoGPtif6gIvIxC6DX7/OO4pCu8+8+R1
+WQr16fc/Wy2oG99/jt13eNTIEVl/Ag8tIxy/T5TjbNlIfW7NGuZZaJwMg3NHJUht
+So4qL2nXoPfjFmksai9BXQ==</ds:Modulus>
+<ds:Exponent>AQAB</ds:Exponent>
+</ds:RSAKeyValue>
+</ds:KeyValue>
+</ds:KeyInfo>
+<ds:Object><xades:QualifyingProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" Target="#xmldsig-acd120ac-34f1-4aa0-86db-982dfdd5627d"><xades:SignedProperties Id="xmldsig-acd120ac-34f1-4aa0-86db-982dfdd5627d-signedprops"><xades:SignedSignatureProperties><xades:SigningCertificate><xades:Cert><xades:CertDigest><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><ds:DigestValue>ZHg2i5UXCl9GKFTqTgUDtP7q8ZiCA/GqmTPa/2eXd74=</ds:DigestValue></xades:CertDigest><xades:IssuerSerial><ds:X509IssuerName>CN=CA PERSONA JURIDICA, OU=DGT, O=MINISTERIO DE HACIENDA, C=CR</ds:X509IssuerName><ds:X509SerialNumber>1709990249971</ds:X509SerialNumber></xades:IssuerSerial></xades:Cert></xades:SigningCertificate><xades:SignaturePolicyIdentifier><xades:SignaturePolicyId><xades:SigPolicyId><xades:Identifier>https://cdn.comprobanteselectronicos.go.cr/xmlschemas/Resoluci%C3%B3n_General_sobre_disposiciones_t%C3%A9cnicas_comprobantes_electr%C3%B3nicos_para_efectos_tributarios.pdf</xades:Identifier><xades:Description/></xades:SigPolicyId><xades:SigPolicyHash><ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><ds:DigestValue>DWxin1xWOeI8OuWQXazh4VjLWAaCLAA954em7DMh0h8=</ds:DigestValue></xades:SigPolicyHash></xades:SignaturePolicyId></xades:SignaturePolicyIdentifier><xades:SignerRole><xades:ClaimedRoles><xades:ClaimedRole>ObligadoTributario</xades:ClaimedRole></xades:ClaimedRoles></xades:SignerRole></xades:SignedSignatureProperties><xades:SignedDataObjectProperties><xades:DataObjectFormat ObjectReference="#xmldsig-acd120ac-34f1-4aa0-86db-982dfdd5627d-ref0"><xades:MimeType>text/xml</xades:MimeType><xades:Encoding>UTF-8</xades:Encoding></xades:DataObjectFormat></xades:SignedDataObjectProperties></xades:SignedProperties></xades:QualifyingProperties></ds:Object></ds:Signature></FacturaElectronica>
