@@ -38,3 +38,10 @@ def test_fallback_sin_clasificar():
     lk = build_lookup([])
     assert clasificar("999", "ZZZ", "compra", lk) == ("Sin Clasificar", "")
     assert "Sin Clasificar" in CLASIFICACIONES_VALID
+
+def test_prioridad_ced_cabys_gana_a_ced_solo():
+    lk = build_lookup([
+        _r(cedula="123", cabys="ABC", clasificacion="Compras"),
+        _r(cedula="123", clasificacion="Gastos"),
+    ])
+    assert clasificar("123", "ABC", "compra", lk) == ("Compras", "")

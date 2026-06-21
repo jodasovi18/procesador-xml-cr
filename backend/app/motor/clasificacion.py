@@ -1,7 +1,10 @@
 """Engine de clasificación: lookup por prioridad (céd+cabys) > cabys > céd(+rol).
 Port de build_clasificacion_lookup/classify_line del parse_xml.py viejo.
 Las reglas de cédula sola se separan por rol; las de cabys son rol-agnósticas."""
+from collections.abc import Iterable
 from dataclasses import dataclass, field
+
+from app.models.regla_clasificacion import ReglaClasificacion
 
 CLASIFICACIONES_VALID = {"Compras", "Gastos", "Bienes de Capital",
                          "No Deducibles", "Sin Clasificar"}
@@ -14,7 +17,7 @@ class Lookup:
     by_ced: dict[str, tuple[str, str]] = field(default_factory=dict)
     by_ced_venta: dict[str, tuple[str, str]] = field(default_factory=dict)
 
-def build_lookup(reglas) -> Lookup:
+def build_lookup(reglas: Iterable[ReglaClasificacion]) -> Lookup:
     lk = Lookup()
     for r in reglas:
         ced = (r.cedula or "").strip() or None
