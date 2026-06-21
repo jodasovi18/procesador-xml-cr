@@ -1,13 +1,26 @@
-"""Resumen por categoría tributaria sobre las líneas guardadas.
-Categoría: 'No Sujeto' para esos códigos, si no '{tipo} {tarifa_label}'."""
+"""Resumen por categoría tributaria sobre las líneas guardadas, con la capa de
+clasificación aplicada al vuelo desde reglas_clasificacion.
+- build_resumen: vista tributaria ({tipo} {tarifa}; No Sujeto; No Deducibles segregado).
+- build_resumen_clasificacion: vista de gestión {clasificacion: {tarifa: {...}}}.
+La clasificación se deriva por la cédula de la contraparte (emisor en compra,
+receptor en venta) y el CABYS de la línea."""
 from decimal import Decimal
+from collections.abc import Iterator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from app.models.comprobante import Comprobante, LineaComprobante
+from app.models.regla_clasificacion import ReglaClasificacion
+from app.motor.clasificacion import build_lookup, clasificar, SUBCATEGORIAS_NO_SUJETO
 
-def build_resumen(db: Session, cliente_id: int, periodo: str, rol: str) -> dict[str, dict[str, Decimal]]:
+
+def _lineas_clasificadas(db: Session, cliente_id: int, periodo: str, rol: str
+                         ) -> Iterator[tuple[LineaComprobante, str, str]]:
+    """Itera (línea, clasificacion, sub_clasificacion) para el cliente/período/rol."""
+    reglas = db.scalars(select(ReglaClasificacion).where(
+        ReglaClasificacion.cliente_id == cliente_id))
+    lookup = build_lookup(reglas)
     stmt = (
-        select(LineaComprobante)
+        select(LineaComprobante, Comprobante)
         .join(Comprobante, LineaComprobante.comprobante_id == Comprobante.id)
         .where(
             Comprobante.cliente_id == cliente_id,
@@ -15,13 +28,30 @@ def build_resumen(db: Session, cliente_id: int, periodo: str, rol: str) -> dict[
             Comprobante.rol == rol,
         )
     )
+    for ln, comp in db.execute(stmt):
+        cedula = comp.emisor_cedula if rol == "compra" else comp.receptor_cedula
+        clas, sub = clasificar(cedula, ln.cabys, rol, lookup)
+        yield ln, clas, sub
+
+
+def _acc(cats: dict, cat: str, base: Decimal, iva: Decimal) -> None:
+    d = cats.setdefault(cat, {"base": Decimal("0"), "iva": Decimal("0")})
+    d["base"] += base
+    d["iva"] += iva
+
+
+def build_resumen(db: Session, cliente_id: int, periodo: str, rol: str
+                  ) -> dict[str, dict[str, Decimal]]:
+    """Vista tributaria. No Deducible → bucket segregado; sub_clas Combustibles →
+    No Sujeto (IVA 0, sin importar la tarifa XML); resto: {tipo} {tarifa} / No Sujeto."""
     cats: dict[str, dict[str, Decimal]] = {}
-    for ln in db.scalars(stmt):
-        if ln.tarifa_label == "No Sujeto":
-            cat = "No Sujeto"
+    for ln, clas, sub in _lineas_clasificadas(db, cliente_id, periodo, rol):
+        if clas == "No Deducibles":
+            _acc(cats, "No Deducibles", ln.base_imponible, ln.iva_monto)
+        elif sub in SUBCATEGORIAS_NO_SUJETO:
+            _acc(cats, "No Sujeto", ln.base_imponible, Decimal("0"))
+        elif ln.tarifa_label == "No Sujeto":
+            _acc(cats, "No Sujeto", ln.base_imponible, ln.iva_monto)
         else:
-            cat = f"{ln.tipo} {ln.tarifa_label}".strip()
-        d = cats.setdefault(cat, {"base": Decimal("0"), "iva": Decimal("0")})
-        d["base"] += ln.base_imponible
-        d["iva"] += ln.iva_monto
+            _acc(cats, f"{ln.tipo} {ln.tarifa_label}".strip(), ln.base_imponible, ln.iva_monto)
     return cats
