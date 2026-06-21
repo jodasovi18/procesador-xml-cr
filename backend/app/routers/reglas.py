@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from app.db import get_db
 from app.auth.deps import get_current_user
@@ -14,7 +15,12 @@ def crear_regla(data: ReglaCreate, db: Session = Depends(get_db),
                 _: Usuario = Depends(get_current_user)):
     regla = ReglaClasificacion(**data.model_dump())
     db.add(regla)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail="cliente_id inválido o regla duplicada")
     db.refresh(regla)
     return regla
 

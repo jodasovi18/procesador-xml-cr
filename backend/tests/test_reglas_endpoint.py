@@ -60,3 +60,8 @@ def test_endpoint_resumen_clasificacion(client, db_session):
 
 def test_endpoint_resumen_clasificacion_sin_token_401(client):
     assert client.get("/api/resumen/clasificacion?cliente_id=1&periodo=202605&rol=compra").status_code == 401
+
+def test_crear_regla_cliente_inexistente_422(client, db_session):
+    token = _token(client, db_session)
+    payload = {"cliente_id": 999999, "cedula": "3101030042", "clasificacion": "Compras"}
+    assert client.post("/api/reglas", json=payload, headers=_auth(token)).status_code == 422
