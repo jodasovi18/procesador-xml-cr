@@ -16,6 +16,8 @@ from app.motor.clasificacion import build_lookup, clasificar, SUBCATEGORIAS_NO_S
 def _lineas_clasificadas(db: Session, cliente_id: int, periodo: str, rol: str
                          ) -> Iterator[tuple[LineaComprobante, str, str]]:
     """Itera (línea, clasificacion, sub_clasificacion) para el cliente/período/rol."""
+    # Se cargan TODAS las reglas del cliente (sin filtrar por rol en SQL):
+    # build_lookup separa céd-sola por rol y clasificar elige; las reglas de cabys son rol-agnósticas.
     reglas = db.scalars(select(ReglaClasificacion).where(
         ReglaClasificacion.cliente_id == cliente_id))
     lookup = build_lookup(reglas)
@@ -55,3 +57,18 @@ def build_resumen(db: Session, cliente_id: int, periodo: str, rol: str
         else:
             _acc(cats, f"{ln.tipo} {ln.tarifa_label}".strip(), ln.base_imponible, ln.iva_monto)
     return cats
+
+
+def build_resumen_clasificacion(db: Session, cliente_id: int, periodo: str, rol: str
+                                ) -> dict[str, dict[str, dict[str, Decimal]]]:
+    """Vista de gestión {clasificacion: {tarifa: {base, iva}}}.
+    sub_clas Combustibles → tarifa 'No Sujeto' con IVA 0; resto usa tarifa_label."""
+    result: dict[str, dict[str, dict[str, Decimal]]] = {}
+    for ln, clas, sub in _lineas_clasificadas(db, cliente_id, periodo, rol):
+        if sub in SUBCATEGORIAS_NO_SUJETO:
+            tasa, iva = "No Sujeto", Decimal("0")
+        else:
+            tasa, iva = ln.tarifa_label, ln.iva_monto
+        por_tasa = result.setdefault(clas, {})
+        _acc(por_tasa, tasa, ln.base_imponible, iva)
+    return result

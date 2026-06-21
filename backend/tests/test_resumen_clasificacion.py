@@ -6,7 +6,7 @@ from app.models.cliente import Cliente
 from app.models.comprobante import Comprobante
 from app.models.regla_clasificacion import ReglaClasificacion
 from app.auth.security import hash_password
-from app.motor.resumen import build_resumen
+from app.motor.resumen import build_resumen, build_resumen_clasificacion
 
 FIXT = Path(__file__).parent / "fixtures"
 PROV = "3101030042"  # emisor de fe_almacen_leon.xml
@@ -54,3 +54,23 @@ def test_resumen_combustibles_a_no_sujeto(client, db_session):
     assert "Bienes 13%" not in res
     assert res["No Sujeto"]["base"] == Decimal("1858.40")
     assert res["No Sujeto"]["iva"] == Decimal("0")
+
+def test_resumen_clasificacion_por_categoria(client, db_session):
+    cli, comp = _ingest_leon(client, db_session)
+    db_session.add(ReglaClasificacion(cliente_id=cli.id, cedula=PROV, clasificacion="Compras"))
+    db_session.commit()
+    res = build_resumen_clasificacion(db_session, cli.id, comp.periodo, "compra")
+    assert res == {"Compras": {"13%": {"base": Decimal("1858.40"), "iva": Decimal("241.59")}}}
+
+def test_resumen_clasificacion_combustibles_no_sujeto(client, db_session):
+    cli, comp = _ingest_leon(client, db_session)
+    db_session.add(ReglaClasificacion(cliente_id=cli.id, cedula=PROV,
+                                      clasificacion="Gastos", sub_clasificacion="Combustibles"))
+    db_session.commit()
+    res = build_resumen_clasificacion(db_session, cli.id, comp.periodo, "compra")
+    assert res == {"Gastos": {"No Sujeto": {"base": Decimal("1858.40"), "iva": Decimal("0")}}}
+
+def test_resumen_clasificacion_sin_reglas_sin_clasificar(client, db_session):
+    cli, comp = _ingest_leon(client, db_session)
+    res = build_resumen_clasificacion(db_session, cli.id, comp.periodo, "compra")
+    assert res == {"Sin Clasificar": {"13%": {"base": Decimal("1858.40"), "iva": Decimal("241.59")}}}
