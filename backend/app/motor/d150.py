@@ -5,9 +5,11 @@ from decimal import Decimal, ROUND_HALF_UP
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 from app.models.comprobante import Comprobante, LineaComprobante
+from app.models.entrada_manual import EntradaManual
 from app.motor.resumen import build_resumen
 
 TIQUETE = "TiqueteElectronico"
+_Q5 = Decimal("0.00001")   # escala de IVA (igual que Numeric(18,5))
 
 
 def _add_tasa(por_tasa: dict, pct: str, base: Decimal, iva: Decimal) -> None:
@@ -32,6 +34,23 @@ def _colapsar(cats: dict) -> tuple[dict, Decimal, Decimal, Decimal]:
         else:
             _add_tasa(por_tasa, cat.split(" ")[-1], v["base"], v["iva"])
     return por_tasa, exentas, no_sujetas, no_deducibles
+
+
+def _aplicar_manual(e: EntradaManual, por_tasa: dict, exentas: Decimal, no_sujetas: Decimal,
+                    no_deducibles: Decimal, es_compra: bool) -> tuple[Decimal, Decimal, Decimal]:
+    """Suma una entrada manual a los acumuladores. Devuelve (exentas, no_sujetas, no_deducibles)."""
+    if e.tarifa > 0:
+        if es_compra and not e.deducible:
+            no_deducibles += e.monto
+        else:
+            iva = (e.monto * e.tarifa / Decimal("100")).quantize(_Q5)
+            pct = f"{int(e.tarifa)}%" if e.tarifa == e.tarifa.to_integral_value() else f"{e.tarifa.normalize()}%"
+            _add_tasa(por_tasa, pct, e.monto, iva)
+    elif e.no_sujeto:
+        no_sujetas += e.monto
+    else:
+        exentas += e.monto
+    return exentas, no_sujetas, no_deducibles
 
 
 def _tiquetes_info(db: Session, cliente_id: int, periodo: str) -> tuple[int, Decimal]:
@@ -76,14 +95,23 @@ def _seccion(por_tasa: dict, exentas: Decimal, no_sujetas: Decimal, total_key: s
 
 def build_d150(db: Session, cliente_id: int, periodo: str) -> dict:
     """Estructura PRECISA (Decimal) del borrador D-150 del cliente/período."""
+    manuales = list(db.scalars(select(EntradaManual).where(
+        EntradaManual.cliente_id == cliente_id, EntradaManual.periodo == periodo)))
+
     # Ventas → débito
     v_por_tasa, v_exentas, v_no_sujetas, _ = _colapsar(
         build_resumen(db, cliente_id, periodo, "venta"))
+    for e in (m for m in manuales if m.rol == "venta"):
+        v_exentas, v_no_sujetas, _nd = _aplicar_manual(
+            e, v_por_tasa, v_exentas, v_no_sujetas, Decimal("0"), es_compra=False)
     ventas = _seccion(v_por_tasa, v_exentas, v_no_sujetas, "total_impuesto")
 
     # Compras → crédito (sin tiquetes; No Deducibles/No Sujeto fuera del crédito)
     c_por_tasa, c_exentas, c_no_sujetas, c_no_deducibles = _colapsar(
         build_resumen(db, cliente_id, periodo, "compra", excluir_tipos={TIQUETE}))
+    for e in (m for m in manuales if m.rol == "compra"):
+        c_exentas, c_no_sujetas, c_no_deducibles = _aplicar_manual(
+            e, c_por_tasa, c_exentas, c_no_sujetas, c_no_deducibles, es_compra=True)
     compras = _seccion(c_por_tasa, c_exentas, c_no_sujetas, "total_credito",
                        no_deducibles=c_no_deducibles,
                        tiquetes=_tiquetes_info(db, cliente_id, periodo))

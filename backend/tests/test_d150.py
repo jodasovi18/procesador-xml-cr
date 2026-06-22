@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from app.models.cliente import Cliente
 from app.models.comprobante import Comprobante, LineaComprobante
+from app.models.entrada_manual import EntradaManual
 from app.motor.resumen import build_resumen
 from app.motor.d150 import build_d150, d150_ovi
 
@@ -99,3 +100,36 @@ def test_d150_ovi_redondeo(db_session):
     assert ovi["liquidacion"]["credito_fiscal"] == 242
     assert ovi["liquidacion"]["impuesto_neto"] == -242   # sin ventas → débito 0
     assert ovi["liquidacion"]["estado"] == "saldo_favor"
+
+
+def test_d150_entradas_manuales_venta(db_session):
+    cli = _cliente(db_session)
+    db_session.add_all([
+        EntradaManual(cliente_id=cli.id, periodo="202605", rol="venta",
+                      monto=Decimal("1000"), tarifa=Decimal("13")),
+        EntradaManual(cliente_id=cli.id, periodo="202605", rol="venta",
+                      monto=Decimal("500"), tarifa=Decimal("0"), no_sujeto=False),  # exento
+        EntradaManual(cliente_id=cli.id, periodo="202605", rol="venta",
+                      monto=Decimal("300"), tarifa=Decimal("0"), no_sujeto=True),   # no sujeto
+    ])
+    db_session.commit()
+    d = build_d150(db_session, cli.id, "202605")
+    assert d["ventas"]["por_tasa"]["13%"]["iva"] == Decimal("130")
+    assert d["ventas"]["exentas"] == Decimal("500")
+    assert d["ventas"]["no_sujetas"] == Decimal("300")
+    assert d["liquidacion"]["debito_fiscal"] == Decimal("130")
+
+def test_d150_entradas_manuales_compra_subasta(db_session):
+    cli = _cliente(db_session)
+    db_session.add_all([
+        EntradaManual(cliente_id=cli.id, periodo="202605", rol="compra",
+                      monto=Decimal("1000"), tarifa=Decimal("13"), deducible=True),
+        EntradaManual(cliente_id=cli.id, periodo="202605", rol="compra",
+                      descripcion="Subasta", monto=Decimal("2000"), tarifa=Decimal("13"),
+                      deducible=False),
+    ])
+    db_session.commit()
+    d = build_d150(db_session, cli.id, "202605")
+    assert d["compras"]["por_tasa"]["13%"]["iva"] == Decimal("130")
+    assert d["compras"]["total_credito"] == Decimal("130")
+    assert d["compras"]["no_deducibles"] == Decimal("2000")
