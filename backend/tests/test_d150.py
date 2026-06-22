@@ -66,3 +66,21 @@ def test_build_d150_saldo_favor(db_session):
     d = build_d150(db_session, cli.id, "202605")
     assert d["liquidacion"]["impuesto_neto"] == Decimal("-117")
     assert d["liquidacion"]["estado"] == "saldo_favor"
+
+
+def test_build_d150_no_deducible_y_no_sujeto_fuera_del_credito(db_session):
+    from app.models.regla_clasificacion import ReglaClasificacion
+    cli = _cliente(db_session)
+    # compra normal 13% (deducible) → crédito
+    _mk_comp(db_session, cli.id, rol="compra", base="100", iva="13", tarifa_label="13%", emisor="PROV1")
+    # compra de proveedor clasificado No Deducible → fuera del crédito
+    _mk_comp(db_session, cli.id, rol="compra", base="500", iva="65", tarifa_label="13%", emisor="PROV2")
+    db_session.add(ReglaClasificacion(cliente_id=cli.id, cedula="PROV2", clasificacion="No Deducibles"))
+    # compra No Sujeto (tarifa_label "No Sujeto") → fuera del crédito
+    _mk_comp(db_session, cli.id, rol="compra", base="300", iva="0", tarifa_label="No Sujeto", emisor="PROV3")
+    db_session.commit()
+    d = build_d150(db_session, cli.id, "202605")
+    assert d["compras"]["por_tasa"]["13%"]["base"] == Decimal("100")   # solo el deducible
+    assert d["compras"]["total_credito"] == Decimal("13")
+    assert d["compras"]["no_deducibles"] == Decimal("500")
+    assert d["compras"]["no_sujetas"] == Decimal("300")

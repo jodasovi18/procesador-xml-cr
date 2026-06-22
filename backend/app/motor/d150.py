@@ -25,6 +25,7 @@ def _colapsar(cats: dict) -> tuple[dict, Decimal, Decimal, Decimal]:
         if cat == "No Sujeto":
             no_sujetas += v["base"]
         elif cat == "No Deducibles":
+            # No Deducibles: solo base; su IVA queda fuera del crédito (segregado, fiel al sistema viejo).
             no_deducibles += v["base"]
         elif cat.endswith("Exento"):
             exentas += v["base"]
@@ -66,9 +67,10 @@ def _seccion(por_tasa: dict, exentas: Decimal, no_sujetas: Decimal, total_key: s
         "total_general": total_gravadas + exentas + no_sujetas,
     }
     if no_deducibles is not None:
+        n, iva_tiq = tiquetes if tiquetes is not None else (0, Decimal("0"))
         sec["no_deducibles"] = no_deducibles
-        sec["tiquetes_excluidos_n"] = tiquetes[0]
-        sec["tiquetes_excluidos_iva"] = tiquetes[1]
+        sec["tiquetes_excluidos_n"] = n
+        sec["tiquetes_excluidos_iva"] = iva_tiq
     return sec
 
 
