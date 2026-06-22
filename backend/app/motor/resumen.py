@@ -13,9 +13,11 @@ from app.models.regla_clasificacion import ReglaClasificacion
 from app.motor.clasificacion import build_lookup, clasificar, SUBCATEGORIAS_NO_SUJETO
 
 
-def _lineas_clasificadas(db: Session, cliente_id: int, periodo: str, rol: str
+def _lineas_clasificadas(db: Session, cliente_id: int, periodo: str, rol: str,
+                         excluir_tipos: set[str] | None = None
                          ) -> Iterator[tuple[LineaComprobante, str, str]]:
-    """Itera (línea, clasificacion, sub_clasificacion) para el cliente/período/rol."""
+    """Itera (línea, clasificacion, sub_clasificacion) para el cliente/período/rol.
+    excluir_tipos: tipos de comprobante (Comprobante.tipo_doc) a omitir (p.ej. tiquetes)."""
     # Se cargan TODAS las reglas del cliente (sin filtrar por rol en SQL):
     # build_lookup separa céd-sola por rol y clasificar elige; las reglas de cabys son rol-agnósticas.
     reglas = db.scalars(select(ReglaClasificacion).where(
@@ -30,6 +32,8 @@ def _lineas_clasificadas(db: Session, cliente_id: int, periodo: str, rol: str
             Comprobante.rol == rol,
         )
     )
+    if excluir_tipos:
+        stmt = stmt.where(Comprobante.tipo_doc.notin_(excluir_tipos))
     for ln, comp in db.execute(stmt):
         cedula = comp.emisor_cedula if rol == "compra" else comp.receptor_cedula
         clas, sub = clasificar(cedula, ln.cabys, rol, lookup)
@@ -42,12 +46,13 @@ def _acc(cats: dict, cat: str, base: Decimal, iva: Decimal) -> None:
     d["iva"] += iva
 
 
-def build_resumen(db: Session, cliente_id: int, periodo: str, rol: str
-                  ) -> dict[str, dict[str, Decimal]]:
+def build_resumen(db: Session, cliente_id: int, periodo: str, rol: str,
+                  excluir_tipos: set[str] | None = None) -> dict[str, dict[str, Decimal]]:
     """Vista tributaria. No Deducible → bucket segregado; sub_clas Combustibles →
-    No Sujeto (IVA 0, sin importar la tarifa XML); resto: {tipo} {tarifa} / No Sujeto."""
+    No Sujeto (IVA 0, sin importar la tarifa XML); resto: {tipo} {tarifa} / No Sujeto.
+    excluir_tipos: tipos de comprobante a omitir (p.ej. {'TiqueteElectronico'} para el crédito)."""
     cats: dict[str, dict[str, Decimal]] = {}
-    for ln, clas, sub in _lineas_clasificadas(db, cliente_id, periodo, rol):
+    for ln, clas, sub in _lineas_clasificadas(db, cliente_id, periodo, rol, excluir_tipos):
         if clas == "No Deducibles":
             _acc(cats, "No Deducibles", ln.base_imponible, ln.iva_monto)
         elif sub in SUBCATEGORIAS_NO_SUJETO:
