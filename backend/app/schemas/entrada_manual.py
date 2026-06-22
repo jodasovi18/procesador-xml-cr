@@ -25,6 +25,8 @@ class EntradaManualCreate(BaseModel):
         v = v.strip()
         if len(v) != 6 or not v.isdigit():
             raise ValueError("periodo debe ser YYYYMM")
+        if not (1 <= int(v[4:]) <= 12):
+            raise ValueError("periodo: mes debe ser 01–12")
         return v
 
     @field_validator("monto", "tarifa")

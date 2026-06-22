@@ -41,6 +41,8 @@ def test_crear_listar_eliminar_entrada(client, db_session):
     assert r.status_code == 201
     eid = r.json()["id"]
     assert r.json()["rol"] == "compra"
+    assert isinstance(r.json()["monto"], str) and Decimal(r.json()["monto"]) == Decimal("2000")
+    assert isinstance(r.json()["tarifa"], str) and Decimal(r.json()["tarifa"]) == Decimal("13")
     lst = client.get(f"/api/entradas-manuales?cliente_id={cli.id}&periodo=202605", headers=_auth(token))
     assert lst.status_code == 200 and len(lst.json()) == 1
     d = client.delete(f"/api/entradas-manuales/{eid}", headers=_auth(token))
@@ -55,3 +57,8 @@ def test_crear_entrada_rol_invalido_422(client, db_session):
 
 def test_entradas_sin_token_401(client):
     assert client.get("/api/entradas-manuales?cliente_id=1&periodo=202605").status_code == 401
+
+def test_crear_entrada_periodo_invalido_422(client, db_session):
+    token = _token(client, db_session); cli = _cliente(db_session)
+    payload = {"cliente_id": cli.id, "periodo": "202613", "rol": "venta", "monto": "10", "tarifa": "13"}
+    assert client.post("/api/entradas-manuales", json=payload, headers=_auth(token)).status_code == 422
