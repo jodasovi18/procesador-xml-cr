@@ -3,6 +3,7 @@ from decimal import Decimal
 from app.models.cliente import Cliente
 from app.models.comprobante import Comprobante, LineaComprobante
 from app.motor.resumen import build_resumen
+from app.motor.d150 import build_d150, d150_ovi
 
 def _cliente(db):
     c = Cliente(cedula="3102858282", nombre="Agrofinca", tipo_cedula="juridica", regimen="tradicional")
@@ -37,3 +38,31 @@ def test_build_resumen_excluir_tiquetes(db_session):
                             excluir_tipos={"TiqueteElectronico"})
     assert sin_tiq["Bienes 13%"]["base"] == Decimal("100")
     assert sin_tiq["Bienes 13%"]["iva"] == Decimal("13")
+
+
+def test_build_d150_precision_basico(db_session):
+    cli = _cliente(db_session)
+    _mk_comp(db_session, cli.id, rol="venta", base="1000", iva="130", tarifa_label="13%")
+    _mk_comp(db_session, cli.id, rol="compra", base="200", iva="26", tarifa_label="13%")
+    _mk_comp(db_session, cli.id, rol="compra", tipo_doc="TiqueteElectronico",
+             base="50", iva="6.5", tarifa_label="13%")
+    d = build_d150(db_session, cli.id, "202605")
+    assert d["ventas"]["por_tasa"]["13%"]["iva"] == Decimal("130")
+    assert d["ventas"]["total_impuesto"] == Decimal("130")
+    assert d["compras"]["por_tasa"]["13%"]["base"] == Decimal("200")   # tiquete excluido
+    assert d["compras"]["total_credito"] == Decimal("26")
+    assert d["compras"]["tiquetes_excluidos_n"] == 1
+    assert d["compras"]["tiquetes_excluidos_iva"] == Decimal("6.5")
+    assert d["liquidacion"]["debito_fiscal"] == Decimal("130")
+    assert d["liquidacion"]["credito_fiscal"] == Decimal("26")
+    assert d["liquidacion"]["impuesto_neto"] == Decimal("104")
+    assert d["liquidacion"]["estado"] == "a_pagar"
+
+
+def test_build_d150_saldo_favor(db_session):
+    cli = _cliente(db_session)
+    _mk_comp(db_session, cli.id, rol="venta", base="100", iva="13", tarifa_label="13%")
+    _mk_comp(db_session, cli.id, rol="compra", base="1000", iva="130", tarifa_label="13%")
+    d = build_d150(db_session, cli.id, "202605")
+    assert d["liquidacion"]["impuesto_neto"] == Decimal("-117")
+    assert d["liquidacion"]["estado"] == "saldo_favor"

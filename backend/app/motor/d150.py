@@ -1,0 +1,98 @@
+"""Borrador D-150 (IVA mensual). build_d150 calcula en Decimal preciso sobre el
+resumen clasificación-aware (1B-5) de ventas (débito) y compras deducibles (crédito,
+excluyendo tiquetes); d150_ovi produce la vista entera estilo OVI-Tribu."""
+from decimal import Decimal, ROUND_HALF_UP
+from sqlalchemy import select, func
+from sqlalchemy.orm import Session
+from app.models.comprobante import Comprobante, LineaComprobante
+from app.motor.resumen import build_resumen
+
+TIQUETE = "TiqueteElectronico"
+
+
+def _add_tasa(por_tasa: dict, pct: str, base: Decimal, iva: Decimal) -> None:
+    d = por_tasa.setdefault(pct, {"base": Decimal("0"), "iva": Decimal("0")})
+    d["base"] += base
+    d["iva"] += iva
+
+
+def _colapsar(cats: dict) -> tuple[dict, Decimal, Decimal, Decimal]:
+    """De {cat: {base, iva}} a (por_tasa, exentas, no_sujetas, no_deducibles).
+    cat gravado = '{tipo} {pct}' → colapsa a '{pct}' sumando base+iva."""
+    por_tasa: dict = {}
+    exentas = Decimal("0"); no_sujetas = Decimal("0"); no_deducibles = Decimal("0")
+    for cat, v in cats.items():
+        if cat == "No Sujeto":
+            no_sujetas += v["base"]
+        elif cat == "No Deducibles":
+            no_deducibles += v["base"]
+        elif cat.endswith("Exento"):
+            exentas += v["base"]
+        else:
+            _add_tasa(por_tasa, cat.split(" ")[-1], v["base"], v["iva"])
+    return por_tasa, exentas, no_sujetas, no_deducibles
+
+
+def _tiquetes_info(db: Session, cliente_id: int, periodo: str) -> tuple[int, Decimal]:
+    row = db.execute(
+        select(func.count(func.distinct(Comprobante.id)),
+               func.coalesce(func.sum(LineaComprobante.iva_monto), Decimal("0")))
+        .join(LineaComprobante, LineaComprobante.comprobante_id == Comprobante.id)
+        .where(Comprobante.cliente_id == cliente_id, Comprobante.periodo == periodo,
+               Comprobante.rol == "compra", Comprobante.tipo_doc == TIQUETE)
+    ).one()
+    return int(row[0]), row[1]
+
+
+def _estado(neto: Decimal) -> str:
+    if neto > 0:
+        return "a_pagar"
+    if neto < 0:
+        return "saldo_favor"
+    return "cero"
+
+
+def _seccion(por_tasa: dict, exentas: Decimal, no_sujetas: Decimal, total_key: str,
+             no_deducibles: Decimal | None = None,
+             tiquetes: tuple[int, Decimal] | None = None) -> dict:
+    por_tasa = {k: por_tasa[k] for k in sorted(por_tasa, key=lambda p: Decimal(p.rstrip("%")))}
+    total_gravadas = sum((v["base"] for v in por_tasa.values()), Decimal("0"))
+    total_iva = sum((v["iva"] for v in por_tasa.values()), Decimal("0"))
+    sec = {
+        "por_tasa": por_tasa,
+        "exentas": exentas, "no_sujetas": no_sujetas,
+        "total_gravadas": total_gravadas,
+        total_key: total_iva,
+        "total_general": total_gravadas + exentas + no_sujetas,
+    }
+    if no_deducibles is not None:
+        sec["no_deducibles"] = no_deducibles
+        sec["tiquetes_excluidos_n"] = tiquetes[0]
+        sec["tiquetes_excluidos_iva"] = tiquetes[1]
+    return sec
+
+
+def build_d150(db: Session, cliente_id: int, periodo: str) -> dict:
+    """Estructura PRECISA (Decimal) del borrador D-150 del cliente/período."""
+    # Ventas → débito
+    v_por_tasa, v_exentas, v_no_sujetas, _ = _colapsar(
+        build_resumen(db, cliente_id, periodo, "venta"))
+    ventas = _seccion(v_por_tasa, v_exentas, v_no_sujetas, "total_impuesto")
+
+    # Compras → crédito (sin tiquetes; No Deducibles/No Sujeto fuera del crédito)
+    c_por_tasa, c_exentas, c_no_sujetas, c_no_deducibles = _colapsar(
+        build_resumen(db, cliente_id, periodo, "compra", excluir_tipos={TIQUETE}))
+    compras = _seccion(c_por_tasa, c_exentas, c_no_sujetas, "total_credito",
+                       no_deducibles=c_no_deducibles,
+                       tiquetes=_tiquetes_info(db, cliente_id, periodo))
+
+    debito = ventas["total_impuesto"]
+    credito = compras["total_credito"]
+    neto = debito - credito
+    liquidacion = {"debito_fiscal": debito, "credito_fiscal": credito,
+                   "impuesto_neto": neto, "estado": _estado(neto)}
+    return {"ventas": ventas, "compras": compras, "liquidacion": liquidacion}
+
+
+def d150_ovi(preciso: dict) -> dict:
+    raise NotImplementedError("Se implementa en la Tarea 4")
