@@ -96,5 +96,36 @@ def build_d150(db: Session, cliente_id: int, periodo: str) -> dict:
     return {"ventas": ventas, "compras": compras, "liquidacion": liquidacion}
 
 
+def _ri(x: Decimal) -> int:
+    return int(x.quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+
+
+def _seccion_ovi(sec: dict, total_key: str) -> dict:
+    por_tasa = {}
+    for pct, v in sec["por_tasa"].items():
+        rate = Decimal(pct.rstrip("%")) / Decimal("100")
+        por_tasa[pct] = {"base": _ri(v["base"]), "iva": _ri(v["base"] * rate)}
+    total_gravadas = sum((t["base"] for t in por_tasa.values()), 0)
+    total_iva = sum((t["iva"] for t in por_tasa.values()), 0)
+    exentas = _ri(sec["exentas"]); no_sujetas = _ri(sec["no_sujetas"])
+    out = {
+        "por_tasa": por_tasa, "exentas": exentas, "no_sujetas": no_sujetas,
+        "total_gravadas": total_gravadas, total_key: total_iva,
+        "total_general": total_gravadas + exentas + no_sujetas,
+    }
+    if "no_deducibles" in sec:
+        out["no_deducibles"] = _ri(sec["no_deducibles"])
+        out["tiquetes_excluidos_n"] = sec["tiquetes_excluidos_n"]
+        out["tiquetes_excluidos_iva"] = _ri(sec["tiquetes_excluidos_iva"])
+    return out
+
+
 def d150_ovi(preciso: dict) -> dict:
-    raise NotImplementedError("Se implementa en la Tarea 4")
+    """Vista entera estilo OVI-Tribu: base→entero, iva=round(base×tasa), totales=suma de redondeados."""
+    ventas = _seccion_ovi(preciso["ventas"], "total_impuesto")
+    compras = _seccion_ovi(preciso["compras"], "total_credito")
+    debito = ventas["total_impuesto"]; credito = compras["total_credito"]
+    neto = debito - credito
+    return {"ventas": ventas, "compras": compras,
+            "liquidacion": {"debito_fiscal": debito, "credito_fiscal": credito,
+                            "impuesto_neto": neto, "estado": _estado(neto)}}

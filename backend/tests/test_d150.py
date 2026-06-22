@@ -84,3 +84,18 @@ def test_build_d150_no_deducible_y_no_sujeto_fuera_del_credito(db_session):
     assert d["compras"]["total_credito"] == Decimal("13")
     assert d["compras"]["no_deducibles"] == Decimal("500")
     assert d["compras"]["no_sujetas"] == Decimal("300")
+
+
+def test_d150_ovi_redondeo(db_session):
+    cli = _cliente(db_session)
+    # base 1858.40 / iva 241.59 (como fe_almacen_leon): OVI base=1858, iva=round(1858.40*0.13)=242
+    _mk_comp(db_session, cli.id, rol="compra", base="1858.40", iva="241.59", tarifa_label="13%")
+    d = build_d150(db_session, cli.id, "202605")
+    ovi = d150_ovi(d)
+    assert d["compras"]["por_tasa"]["13%"]["iva"] == Decimal("241.59")  # preciso intacto
+    assert ovi["compras"]["por_tasa"]["13%"]["base"] == 1858
+    assert ovi["compras"]["por_tasa"]["13%"]["iva"] == 242
+    assert ovi["compras"]["total_credito"] == 242
+    assert ovi["liquidacion"]["credito_fiscal"] == 242
+    assert ovi["liquidacion"]["impuesto_neto"] == -242   # sin ventas → débito 0
+    assert ovi["liquidacion"]["estado"] == "saldo_favor"
