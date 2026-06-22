@@ -133,3 +133,30 @@ def test_d150_entradas_manuales_compra_subasta(db_session):
     assert d["compras"]["por_tasa"]["13%"]["iva"] == Decimal("130")
     assert d["compras"]["total_credito"] == Decimal("130")
     assert d["compras"]["no_deducibles"] == Decimal("2000")
+
+def _token_d150(client, db_session):
+    from app.models.usuario import Usuario
+    from app.auth.security import hash_password
+    db_session.add(Usuario(nombre="d150", password_hash=hash_password("clave12345"), es_admin=True))
+    db_session.commit()
+    return client.post("/auth/login", data={"username": "d150", "password": "clave12345"}).json()["access_token"]
+
+def test_endpoint_d150(client, db_session):
+    token = _token_d150(client, db_session); cli = _cliente(db_session)
+    auth = {"Authorization": f"Bearer {token}"}
+    client.post("/api/entradas-manuales",
+                json={"cliente_id": cli.id, "periodo": "202605", "rol": "venta", "monto": "1000", "tarifa": "13"},
+                headers=auth)
+    client.post("/api/entradas-manuales",
+                json={"cliente_id": cli.id, "periodo": "202605", "rol": "compra", "monto": "200", "tarifa": "13"},
+                headers=auth)
+    r = client.get(f"/api/d150?cliente_id={cli.id}&periodo=202605", headers=auth)
+    assert r.status_code == 200
+    body = r.json()
+    assert Decimal(body["preciso"]["liquidacion"]["impuesto_neto"]) == Decimal("104")
+    assert body["ovi"]["liquidacion"]["impuesto_neto"] == 104
+    assert body["ovi"]["ventas"]["por_tasa"]["13%"]["iva"] == 130
+    assert body["ovi"]["compras"]["por_tasa"]["13%"]["iva"] == 26
+
+def test_endpoint_d150_sin_token_401(client):
+    assert client.get("/api/d150?cliente_id=1&periodo=202605").status_code == 401

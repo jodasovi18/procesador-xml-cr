@@ -148,6 +148,15 @@ def _seccion_ovi(sec: dict, total_key: str) -> dict:
     return out
 
 
+def jsonify_preciso(x):
+    """Serializa la estructura precisa para JSON: Decimal→str, recursivo en dicts."""
+    if isinstance(x, Decimal):
+        return str(x)
+    if isinstance(x, dict):
+        return {k: jsonify_preciso(v) for k, v in x.items()}
+    return x
+
+
 def d150_ovi(preciso: dict) -> dict:
     """Vista entera estilo OVI-Tribu: base→entero, iva=round(base×tasa), totales=suma de redondeados."""
     ventas = _seccion_ovi(preciso["ventas"], "total_impuesto")
