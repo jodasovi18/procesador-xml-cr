@@ -1,3 +1,4 @@
+import pytest
 from sxml_agent.config import cargar_config
 
 def test_cargar_config(tmp_path):
@@ -16,3 +17,10 @@ def test_cargar_config(tmp_path):
     assert cfg.carpetas == ["C:/datos/a", "C:/datos/b"]
     assert cfg.lote_size == 50
     assert cfg.estado_path == "estado.json"   # default
+
+
+def test_cargar_config_falta_clave_requerida(tmp_path):
+    f = tmp_path / "agent.toml"
+    f.write_text('backend_url = "http://x"\nusuario = "u"\n', encoding="utf-8")  # faltan clave, carpetas
+    with pytest.raises(ValueError):
+        cargar_config(str(f))

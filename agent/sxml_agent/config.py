@@ -15,7 +15,18 @@ class Config:
 
 
 def cargar_config(path: str) -> Config:
-    data = tomllib.loads(Path(path).read_text(encoding="utf-8"))
+    ruta = Path(path)
+    try:
+        texto = ruta.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Archivo de configuración no encontrado: {ruta}")
+    try:
+        data = tomllib.loads(texto)
+    except tomllib.TOMLDecodeError as e:
+        raise ValueError(f"TOML inválido en {ruta}: {e}") from e
+    faltantes = {"backend_url", "usuario", "clave", "carpetas"} - data.keys()
+    if faltantes:
+        raise ValueError(f"Faltan claves requeridas en {ruta}: {sorted(faltantes)}")
     return Config(
         backend_url=str(data["backend_url"]).rstrip("/"),
         usuario=str(data["usuario"]),
