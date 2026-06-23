@@ -21,3 +21,8 @@ def test_hash_archivo_estable_y_sensible(tmp_path):
     assert len(h1) == 64
     f.write_text("<b/>", encoding="utf-8")
     assert hash_archivo(f) != h1
+
+def test_escanear_deduplica_misma_carpeta(tmp_path):
+    (tmp_path / "a.xml").write_text("<a/>", encoding="utf-8")
+    res = escanear([str(tmp_path), str(tmp_path)])  # misma carpeta dos veces
+    assert len(res) == 1

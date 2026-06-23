@@ -11,8 +11,8 @@ def escanear(carpetas: list[str]) -> list[Path]:
         base = Path(carpeta)
         if not base.is_dir():
             continue
-        for p in base.rglob("*.xml"):
-            if p.is_file():
+        for p in base.rglob("*"):
+            if p.is_file() and p.suffix.lower() == ".xml":
                 vistos.add(p.resolve())
     return sorted(vistos)
 
