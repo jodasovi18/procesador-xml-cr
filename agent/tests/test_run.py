@@ -81,3 +81,15 @@ def test_main_exit_code_ok(monkeypatch):
 def test_main_exit_code_con_fallidas(monkeypatch):
     monkeypatch.setattr(run_mod, "ejecutar", lambda cfg: {"tandas_fallidas": 1})
     assert cli.main(["--config", "x.toml"]) == 1
+
+from sxml_agent import watcher as watcher_mod
+
+def test_main_watch_llama_vigilar(monkeypatch):
+    capt = {}
+    def fake_vigilar(p, intervalo=None):
+        capt["p"] = p
+        capt["intervalo"] = intervalo
+    monkeypatch.setattr(watcher_mod, "vigilar", fake_vigilar)
+    assert cli.main(["--config", "x.toml", "--watch", "--intervalo", "60"]) == 0
+    assert capt["p"] == "x.toml"
+    assert capt["intervalo"] == 60
