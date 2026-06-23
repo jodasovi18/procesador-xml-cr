@@ -32,3 +32,50 @@ def _entradas_zip(contenido: bytes, max_entradas: int = MAX_ENTRADAS_ZIP,
         if sum(i.file_size for i in infos) > max_bytes:
             raise ValueError("el ZIP excede el tamaño descomprimido permitido")
         return [(i.filename, zf.read(i)) for i in infos]
+
+
+def _ingest_uno(db: Session, nombre: str, contenido: bytes) -> dict:
+    """Procesa un XML en un savepoint. Devuelve el dict de resultado por archivo."""
+    try:
+        with db.begin_nested():
+            r = ingest_xml(db, contenido)
+    except (ParseError, ValueError, InvalidOperation) as e:
+        return {"archivo": nombre, "estado": "error", "motivo": f"XML inválido: {e}"}
+    except IntegrityError:
+        return {"archivo": nombre, "estado": "error", "motivo": "conflicto al guardar"}
+    if r.get("omitido"):
+        return {"archivo": nombre, "estado": "omitido", "motivo": r.get("motivo", "")}
+    estado = "nuevo" if r.get("nuevo") else "actualizado"
+    return {"archivo": nombre, "estado": estado, "clave": r.get("clave"),
+            "rol": r.get("rol"), "cliente_id": r.get("cliente_id")}
+
+
+def _resumen(resultados: list[dict]) -> dict:
+    c = Counter(r["estado"] for r in resultados)
+    return {
+        "total": len(resultados),
+        "nuevos": c["nuevo"], "actualizados": c["actualizado"],
+        "omitidos": c["omitido"], "errores": c["error"],
+        "archivos": resultados,
+    }
+
+
+def ingest_lote(db: Session, archivos: list[tuple[str, bytes]]) -> dict:
+    """Procesa un lote de archivos (.xml o .zip). Éxito parcial: un archivo malo no
+    aborta el lote. Hace un único commit al final. Devuelve resumen + detalle."""
+    resultados: list[dict] = []
+    for nombre, contenido in archivos:
+        low = nombre.lower()
+        if low.endswith(".zip"):
+            try:
+                entradas = _entradas_zip(contenido)
+            except (zipfile.BadZipFile, ValueError) as e:
+                resultados.append({"archivo": nombre, "estado": "error", "motivo": f"ZIP inválido: {e}"})
+                continue
+            for sub_nombre, sub_bytes in entradas:
+                resultados.append(_ingest_uno(db, sub_nombre, sub_bytes))
+        elif low.endswith(".xml"):
+            resultados.append(_ingest_uno(db, nombre, contenido))
+        # otros tipos: se ignoran silenciosamente
+    db.commit()
+    return _resumen(resultados)
