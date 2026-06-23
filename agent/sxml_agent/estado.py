@@ -23,6 +23,7 @@ class Estado:
         self._hashes.add(h)
 
     def guardar(self) -> None:
+        self._path.parent.mkdir(parents=True, exist_ok=True)
         self._path.write_text(
             json.dumps({"subidos": sorted(self._hashes)}, ensure_ascii=False),
             encoding="utf-8")

@@ -11,3 +11,9 @@ def test_estado_marcar_guardar_recargar(tmp_path):
     e2 = Estado.cargar(ruta)
     assert e2.ya_subido("abc") is True
     assert e2.ya_subido("xyz") is False
+
+def test_estado_guardar_crea_directorios(tmp_path):
+    ruta = str(tmp_path / "nuevo" / "sub" / "estado.json")
+    e = Estado.cargar(ruta)
+    e.marcar("abc"); e.guardar()
+    assert Estado.cargar(ruta).ya_subido("abc") is True
