@@ -24,3 +24,12 @@ def test_cargar_config_falta_clave_requerida(tmp_path):
     f.write_text('backend_url = "http://x"\nusuario = "u"\n', encoding="utf-8")  # faltan clave, carpetas
     with pytest.raises(ValueError):
         cargar_config(str(f))
+
+
+def test_cargar_config_intervalo(tmp_path):
+    f = tmp_path / "agent.toml"
+    f.write_text('backend_url="http://x"\nusuario="u"\nclave="p"\ncarpetas=[]\n', encoding="utf-8")
+    assert cargar_config(str(f)).intervalo == 300   # default
+    f.write_text('backend_url="http://x"\nusuario="u"\nclave="p"\ncarpetas=[]\nintervalo=60\n',
+                 encoding="utf-8")
+    assert cargar_config(str(f)).intervalo == 60
