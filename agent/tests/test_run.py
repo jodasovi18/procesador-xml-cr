@@ -93,3 +93,15 @@ def test_main_watch_llama_vigilar(monkeypatch):
     assert cli.main(["--config", "x.toml", "--watch", "--intervalo", "60"]) == 0
     assert capt["p"] == "x.toml"
     assert capt["intervalo"] == 60
+
+def test_main_watch_keyboard_interrupt_exit_0(monkeypatch):
+    def fake_vigilar(p, intervalo=None):
+        raise KeyboardInterrupt
+    monkeypatch.setattr(watcher_mod, "vigilar", fake_vigilar)
+    assert cli.main(["--config", "x.toml", "--watch"]) == 0
+
+def test_main_watch_exception_exit_2(monkeypatch):
+    def fake_vigilar(p, intervalo=None):
+        raise RuntimeError("backend down")
+    monkeypatch.setattr(watcher_mod, "vigilar", fake_vigilar)
+    assert cli.main(["--config", "x.toml", "--watch"]) == 2
