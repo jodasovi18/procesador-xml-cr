@@ -16,12 +16,17 @@ MAX_BYTES_DESCOMPRIMIDO = 200 * 1024 * 1024  # 200 MB
 def _entradas_zip(contenido: bytes, max_entradas: int = MAX_ENTRADAS_ZIP,
                   max_bytes: int = MAX_BYTES_DESCOMPRIMIDO) -> list[tuple[str, bytes]]:
     """Devuelve las entradas .xml de un ZIP (ignora directorios, no-.xml y __MACOSX).
-    Lanza zipfile.BadZipFile si el ZIP es inválido, o ValueError si excede los topes."""
+    Lanza zipfile.BadZipFile si el ZIP es inválido, o ValueError si excede los topes.
+
+    Nota: el tope de tamaño usa ZipInfo.file_size (declarado en el ZIP); un ZIP
+    malicioso podría mentirlo. Aceptable para esta herramienta interna mono-tenant
+    (solo usuarios autenticados suben archivos); un límite incremental al descomprimir
+    queda diferido."""
     with zipfile.ZipFile(io.BytesIO(contenido)) as zf:
         infos = [i for i in zf.infolist()
                  if not i.is_dir()
                  and i.filename.lower().endswith(".xml")
-                 and "__MACOSX" not in i.filename]
+                 and not i.filename.startswith("__MACOSX/")]
         if len(infos) > max_entradas:
             raise ValueError(f"el ZIP excede el máximo de {max_entradas} entradas")
         if sum(i.file_size for i in infos) > max_bytes:

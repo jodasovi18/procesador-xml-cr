@@ -34,3 +34,8 @@ def test_entradas_zip_tope_entradas():
     z = _zip_bytes({f"f{i}.xml": b"<x/>" for i in range(3)})
     with pytest.raises(ValueError):
         _entradas_zip(z, max_entradas=2)
+
+def test_entradas_zip_tope_bytes():
+    z = _zip_bytes({"a.xml": b"x" * 100, "b.xml": b"y" * 100})  # 200 bytes descomprimidos
+    with pytest.raises(ValueError):
+        _entradas_zip(z, max_bytes=150)
