@@ -31,3 +31,16 @@ def test_subir_lote_401_lanza_noautorizado(tmp_path):
     api = _api(lambda req: httpx.Response(401))
     with pytest.raises(NoAutorizado):
         api.subir_lote("TOK", [f])
+
+def test_subir_lote_500_lanza_apierror(tmp_path):
+    f = tmp_path / "a.xml"; f.write_text("<a/>", encoding="utf-8")
+    api = _api(lambda req: httpx.Response(500, text="boom"))
+    with pytest.raises(ApiError):
+        api.subir_lote("TOK", [f])
+
+def test_subir_lote_error_conexion_lanza_apierror(tmp_path):
+    f = tmp_path / "a.xml"; f.write_text("<a/>", encoding="utf-8")
+    def handler(req):
+        raise httpx.ConnectError("sin red")
+    with pytest.raises(ApiError):
+        _api(handler).subir_lote("TOK", [f])
