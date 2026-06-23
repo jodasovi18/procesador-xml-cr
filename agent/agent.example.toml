@@ -1,0 +1,10 @@
+# Configuración del agente de subida de XML. Copiar a agent.toml y completar.
+backend_url = "http://localhost:8000"
+usuario = "agente"
+clave = "CAMBIAR"
+# Carpetas a escanear recursivamente buscando .xml:
+carpetas = [
+  "C:/Users/Usuario/OneDrive/OFICINA/CONTAS/IVA",
+]
+lote_size = 100
+estado_path = "estado.json"
