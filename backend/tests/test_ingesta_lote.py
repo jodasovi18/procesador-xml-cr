@@ -92,3 +92,33 @@ def test_ingest_lote_zip_corrupto(db_session):
     assert res["total"] == 1
     assert res["errores"] == 1
     assert res["archivos"][0]["estado"] == "error"
+
+
+from app.models.usuario import Usuario
+from app.auth.security import hash_password
+
+def _token(client, db_session):
+    db_session.add(Usuario(nombre="lote", password_hash=hash_password("clave12345"), es_admin=True))
+    db_session.commit()
+    return client.post("/auth/login", data={"username": "lote", "password": "clave12345"}).json()["access_token"]
+
+def _auth(t):
+    return {"Authorization": f"Bearer {t}"}
+
+def test_endpoint_ingesta_lote(client, db_session):
+    token = _token(client, db_session); _cliente(db_session)
+    z = _zip_bytes({"fe_almacen_leon.xml": (FIXT / "fe_almacen_leon.xml").read_bytes()})
+    files = [
+        ("archivos", ("mayo.zip", z, "application/zip")),
+        ("archivos", ("mensaje_hacienda.xml", (FIXT / "mensaje_hacienda.xml").read_bytes(), "application/xml")),
+    ]
+    r = client.post("/api/ingesta/lote", files=files, headers=_auth(token))
+    assert r.status_code == 200
+    body = r.json()
+    assert body["total"] == 2
+    assert body["nuevos"] == 1
+    assert body["omitidos"] == 1
+
+def test_endpoint_ingesta_lote_sin_token_401(client):
+    files = [("archivos", ("x.xml", b"<x/>", "application/xml"))]
+    assert client.post("/api/ingesta/lote", files=files).status_code == 401
