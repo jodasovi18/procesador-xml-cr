@@ -30,3 +30,10 @@ def test_vigilar_continua_si_una_pasada_falla(tmp_path, monkeypatch):
     n = watcher.vigilar(cfg, max_corridas=2, dormir=lambda s: None)
     assert n == 2
     assert len(llamadas) == 2
+
+def test_vigilar_usa_intervalo_override(tmp_path, monkeypatch):
+    cfg = _cfg(tmp_path, intervalo=300)
+    monkeypatch.setattr(run, "ejecutar", lambda p, api=None: {"tandas_fallidas": 0})
+    esperas = []
+    watcher.vigilar(cfg, intervalo=60, max_corridas=2, dormir=lambda s: esperas.append(s))
+    assert esperas == [60]   # 2 pasadas → 1 sleep entre ellas, con el override (no cfg.intervalo=300)
