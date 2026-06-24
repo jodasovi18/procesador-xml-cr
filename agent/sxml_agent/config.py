@@ -12,6 +12,7 @@ class Config:
     carpetas: list[str]
     lote_size: int = 100
     estado_path: str = "estado.json"
+    intervalo: int = 300  # segundos entre pasadas en modo watch
 
 
 def cargar_config(path: str) -> Config:
@@ -34,4 +35,5 @@ def cargar_config(path: str) -> Config:
         carpetas=[str(c) for c in data["carpetas"]],
         lote_size=int(data.get("lote_size", 100)),
         estado_path=str(data.get("estado_path", "estado.json")),
+        intervalo=int(data.get("intervalo", 300)),
     )

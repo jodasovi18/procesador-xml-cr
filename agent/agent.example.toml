@@ -8,3 +8,4 @@ carpetas = [
 ]
 lote_size = 100
 estado_path = "estado.json"
+intervalo = 300  # segundos entre pasadas en modo --watch
