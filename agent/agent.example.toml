@@ -2,6 +2,9 @@
 backend_url = "http://localhost:8000"
 usuario = "agente"
 clave = "CAMBIAR"
+# Alternativa recomendada a usuario/clave: token de agente emitido por el backend
+# (POST /api/agent-tokens). Si se define `token`, usuario/clave se ignoran.
+# token = "PEGAR-TOKEN-DEL-BACKEND"
 # Carpetas a escanear recursivamente buscando .xml:
 carpetas = [
   "C:/Users/Usuario/OneDrive/OFICINA/CONTAS/IVA",

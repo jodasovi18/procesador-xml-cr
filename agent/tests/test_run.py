@@ -105,3 +105,45 @@ def test_main_watch_exception_exit_2(monkeypatch):
         raise RuntimeError("backend down")
     monkeypatch.setattr(watcher_mod, "vigilar", fake_vigilar)
     assert cli.main(["--config", "x.toml", "--watch"]) == 2
+
+
+def _cfg_token(tmp_path, carpeta, token="TOK"):
+    f = tmp_path / "agent.toml"
+    f.write_text(
+        f'backend_url = "http://x"\ntoken = {token!r}\n'
+        f'carpetas = [{carpeta!r}]\nlote_size = 10\nestado_path = {str(tmp_path / "estado.json")!r}\n',
+        encoding="utf-8")
+    return str(f)
+
+def test_run_con_token_omite_login(tmp_path):
+    datos = tmp_path / "datos"; datos.mkdir()
+    (datos / "a.xml").write_text("<a/>", encoding="utf-8")
+    cfg = _cfg_token(tmp_path, str(datos))
+    llamadas = {"login": 0, "lote": 0}
+    def handler(req):
+        if req.url.path == "/auth/login":
+            llamadas["login"] += 1
+            return httpx.Response(500)
+        llamadas["lote"] += 1
+        assert req.headers["authorization"] == "Bearer TOK"
+        return httpx.Response(200, json={"total": 1, "nuevos": 1, "actualizados": 0,
+                                         "omitidos": 0, "errores": 0, "archivos": []})
+    r = ejecutar(cfg, api=_api(handler))
+    assert llamadas["login"] == 0
+    assert llamadas["lote"] == 1
+    assert r["nuevos"] == 1
+
+def test_run_con_token_401_no_reloguea(tmp_path):
+    datos = tmp_path / "datos"; datos.mkdir()
+    (datos / "a.xml").write_text("<a/>", encoding="utf-8")
+    cfg = _cfg_token(tmp_path, str(datos))
+    llamadas = {"login": 0, "lote": 0}
+    def handler(req):
+        if req.url.path == "/auth/login":
+            llamadas["login"] += 1
+            return httpx.Response(200, json={"access_token": "X"})
+        llamadas["lote"] += 1
+        return httpx.Response(401)
+    r = ejecutar(cfg, api=_api(handler))
+    assert llamadas["login"] == 0
+    assert r["tandas_fallidas"] == 1
