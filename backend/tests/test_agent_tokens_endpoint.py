@@ -53,3 +53,8 @@ def test_crear_no_admin_403(client, db_session):
 
 def test_agent_tokens_sin_token_401(client):
     assert client.get("/api/agent-tokens").status_code == 401
+
+def test_crear_label_invalido_422(client, db_session):
+    adm = _login(client, db_session, "adm", True)
+    assert client.post("/api/agent-tokens", json={"label": "   "}, headers=_auth(adm)).status_code == 422
+    assert client.post("/api/agent-tokens", json={"label": "x" * 121}, headers=_auth(adm)).status_code == 422

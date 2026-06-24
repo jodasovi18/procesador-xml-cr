@@ -11,6 +11,8 @@ class AgentTokenCreate(BaseModel):
         v = v.strip()
         if not v:
             raise ValueError("label requerido")
+        if len(v) > 120:
+            raise ValueError("label demasiado largo (máx 120)")
         return v
 
 
