@@ -31,22 +31,29 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
 def get_actor(token: str = Depends(oauth2_scheme),
               db: Session = Depends(get_db)) -> "Usuario | AgentToken":
-    """Acepta un JWT de usuario o un token de agente. Usar solo en rutas de ingesta."""
+    """Acepta un JWT de usuario o un token de agente. Usar solo en rutas de ingesta.
+    Un JWT con firma válida DEBE resolver a un usuario existente; si no, 401 (no cae al
+    token de agente). Un Bearer que no es un JWT se busca como token de agente."""
+    cred_exc = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                             detail="Credenciales inválidas",
+                             headers={"WWW-Authenticate": "Bearer"})
     try:
         payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+    except JWTError:
+        payload = None
+    if payload is not None:
         sub = payload.get("sub")
-        if sub is not None:
-            usuario = db.get(Usuario, int(sub))
-            if usuario is not None:
-                return usuario
-    except (JWTError, ValueError):
-        pass
+        try:
+            usuario = db.get(Usuario, int(sub)) if sub is not None else None
+        except (ValueError, TypeError):
+            usuario = None
+        if usuario is None:
+            raise cred_exc
+        return usuario
     at = db.scalar(select(AgentToken).where(AgentToken.token_hash == hash_token(token)))
     if at is not None:
         return at
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail="Credenciales inválidas",
-                        headers={"WWW-Authenticate": "Bearer"})
+    raise cred_exc
 
 
 def requiere_admin(usuario: Usuario = Depends(get_current_user)) -> Usuario:
