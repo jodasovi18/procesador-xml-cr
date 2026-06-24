@@ -19,7 +19,7 @@ def test_cargar_config(tmp_path):
     assert cfg.estado_path == "estado.json"   # default
 
 
-def test_cargar_config_falta_clave_requerida(tmp_path):
+def test_cargar_config_falta_carpetas(tmp_path):
     f = tmp_path / "agent.toml"
     f.write_text('backend_url = "http://x"\nusuario = "u"\n', encoding="utf-8")  # faltan clave, carpetas
     with pytest.raises(ValueError):
@@ -45,5 +45,12 @@ def test_cargar_config_token(tmp_path):
 def test_cargar_config_sin_token_ni_credenciales_falla(tmp_path):
     f = tmp_path / "agent.toml"
     f.write_text('backend_url="http://x"\ncarpetas=[]\n', encoding="utf-8")
+    with pytest.raises(ValueError):
+        cargar_config(str(f))
+
+
+def test_cargar_config_credenciales_incompletas_falla(tmp_path):
+    f = tmp_path / "agent.toml"
+    f.write_text('backend_url="http://x"\ncarpetas=[]\nusuario="u"\n', encoding="utf-8")  # falta clave, sin token
     with pytest.raises(ValueError):
         cargar_config(str(f))
