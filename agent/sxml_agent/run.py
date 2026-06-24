@@ -16,7 +16,8 @@ def _tandas(items: list, n: int):
 def ejecutar(config_path: str, api: ApiClient | None = None) -> dict:
     cfg = cargar_config(config_path)
     api = api or ApiClient(cfg.backend_url)
-    token = api.login(cfg.usuario, cfg.clave)
+    usa_token_estatico = bool(cfg.token)
+    token = cfg.token if usa_token_estatico else api.login(cfg.usuario, cfg.clave)
     estado = Estado.cargar(cfg.estado_path)
 
     todos = escanear(cfg.carpetas)
@@ -32,7 +33,9 @@ def ejecutar(config_path: str, api: ApiClient | None = None) -> dict:
             try:
                 rep = api.subir_lote(token, rutas)
             except NoAutorizado:
-                token = api.login(cfg.usuario, cfg.clave)   # re-login una vez
+                if usa_token_estatico:
+                    raise
+                token = api.login(cfg.usuario, cfg.clave)
                 rep = api.subir_lote(token, rutas)
         except ApiError:
             resumen["tandas_fallidas"] += 1
