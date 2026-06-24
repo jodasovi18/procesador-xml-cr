@@ -4,8 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from app.db import get_db
-from app.auth.deps import get_current_user
-from app.models.usuario import Usuario
+from app.auth.deps import get_actor
 from app.motor.ingesta import ingest_xml
 from app.motor.ingesta_lote import ingest_lote
 
@@ -13,7 +12,7 @@ router = APIRouter(prefix="/api/ingesta", tags=["ingesta"])
 
 @router.post("")
 def ingesta(archivo: UploadFile, db: Session = Depends(get_db),
-            _: Usuario = Depends(get_current_user)):
+            _=Depends(get_actor)):
     contenido = archivo.file.read()
     try:
         resultado = ingest_xml(db, contenido)
@@ -35,6 +34,6 @@ def ingesta(archivo: UploadFile, db: Session = Depends(get_db),
 
 @router.post("/lote")
 def ingesta_lote(archivos: list[UploadFile], db: Session = Depends(get_db),
-                 _: Usuario = Depends(get_current_user)):
+                 _=Depends(get_actor)):
     pares = [(a.filename or "", a.file.read()) for a in archivos]
     return ingest_lote(db, pares)
