@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import { renderHook, act } from '@testing-library/react';
 import { SeleccionProvider, useSeleccion } from './SeleccionContext';
 
@@ -18,4 +19,14 @@ it('default rol = compra y permite cambiar la selección', () => {
 
 it('useSeleccion lanza fuera del provider', () => {
   expect(() => renderHook(() => useSeleccion())).toThrow();
+});
+
+it('acepta selección inicial por props', () => {
+  const wrapper = ({ children }: { children: ReactNode }) => (
+    <SeleccionProvider initialClienteId={7} initialPeriodo="2026-03" initialRol="venta">{children}</SeleccionProvider>
+  );
+  const { result } = renderHook(() => useSeleccion(), { wrapper });
+  expect(result.current.clienteId).toBe(7);
+  expect(result.current.periodo).toBe('2026-03');
+  expect(result.current.rol).toBe('venta');
 });

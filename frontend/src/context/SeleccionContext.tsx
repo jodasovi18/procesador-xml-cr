@@ -13,10 +13,20 @@ interface SeleccionState {
 
 const SeleccionContext = createContext<SeleccionState | null>(null);
 
-export function SeleccionProvider({ children }: { children: ReactNode }) {
-  const [clienteId, setClienteId] = useState<number | null>(null);
-  const [periodo, setPeriodo] = useState<string | null>(null);
-  const [rol, setRol] = useState<Rol>('compra');
+export function SeleccionProvider({
+  children,
+  initialClienteId = null,
+  initialPeriodo = null,
+  initialRol = 'compra',
+}: {
+  children: ReactNode;
+  initialClienteId?: number | null;
+  initialPeriodo?: string | null;
+  initialRol?: Rol;
+}) {
+  const [clienteId, setClienteId] = useState<number | null>(initialClienteId);
+  const [periodo, setPeriodo] = useState<string | null>(initialPeriodo);
+  const [rol, setRol] = useState<Rol>(initialRol);
   return (
     <SeleccionContext.Provider
       value={{ clienteId, periodo, rol, setClienteId, setPeriodo, setRol }}
