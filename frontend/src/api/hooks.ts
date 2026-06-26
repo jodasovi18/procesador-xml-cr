@@ -24,9 +24,50 @@ export interface ClienteCreate {
 export type Resumen = Record<string, { base: string; iva: string }>;
 export type ResumenClasificacion = Record<string, Record<string, { base: string; iva: string }>>;
 
+// ---------------------------------------------------------------------------
+// D-150 shape types (shared with D150Page.tsx)
+// ---------------------------------------------------------------------------
+
+export interface PorTasaEntry {
+  base: string | number;
+  iva: string | number;
+}
+
+export interface SeccionBase {
+  por_tasa: Record<string, PorTasaEntry>;
+  exentas: string | number;
+  no_sujetas: string | number;
+  total_gravadas: string | number;
+  total_general: string | number;
+}
+
+export interface SeccionVentas extends SeccionBase {
+  total_impuesto: string | number;
+}
+
+export interface SeccionCompras extends SeccionBase {
+  total_credito: string | number;
+  no_deducibles?: string | number;
+  tiquetes_excluidos_n?: number;
+  tiquetes_excluidos_iva?: string | number;
+}
+
+export interface Liquidacion {
+  debito_fiscal: string | number;
+  credito_fiscal: string | number;
+  impuesto_neto: string | number;
+  estado: string;
+}
+
+export interface D150Shape {
+  ventas: SeccionVentas;
+  compras: SeccionCompras;
+  liquidacion: Liquidacion;
+}
+
 export interface D150Response {
-  preciso: Record<string, unknown>;
-  ovi: Record<string, unknown>;
+  preciso: D150Shape;
+  ovi: D150Shape;
 }
 
 /**

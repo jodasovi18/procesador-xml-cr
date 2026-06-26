@@ -125,6 +125,8 @@ it('cambia a vista OVI y muestra enteros sin decimales', async () => {
   // En OVI los valores son enteros sin símbolo de moneda (puede haber duplicados)
   expect((await screen.findAllByText('584716')).length).toBeGreaterThanOrEqual(1);
   expect(screen.getAllByText('3900000').length).toBeGreaterThanOrEqual(1);
+  // Impuesto neto negativo aparece tal cual en OVI
+  expect(await screen.findByText('-3315284')).toBeInTheDocument();
   // Estado sigue igual
   expect(screen.getByText('saldo_favor')).toBeInTheDocument();
   // Ya no hay formatos con ₡

@@ -74,8 +74,8 @@ it('useD150 devuelve preciso y ovi', async () => {
   );
   const { result } = renderHook(() => useD150(1, '2026-05'), { wrapper });
   await waitFor(() => expect(result.current.isSuccess).toBe(true));
-  expect(result.current.data?.preciso?.['debito']).toBe('100');
-  expect(result.current.data?.ovi?.['debito']).toBe(100);
+  expect((result.current.data?.preciso as unknown as Record<string, unknown>)?.['debito']).toBe('100');
+  expect((result.current.data?.ovi as unknown as Record<string, unknown>)?.['debito']).toBe(100);
 });
 
 it('useCrearCliente llama POST y devuelve el cliente creado', async () => {

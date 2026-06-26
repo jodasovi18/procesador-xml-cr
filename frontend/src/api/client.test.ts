@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { apiFetch, ApiError, setToken, clearToken } from './client';
+import { apiFetch, setToken, clearToken } from './client';
 
 const server = setupServer();
 beforeAll(() => server.listen());

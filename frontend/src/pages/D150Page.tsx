@@ -10,49 +10,8 @@ import {
   Text,
 } from '@mantine/core';
 import { useSeleccion } from '../context/SeleccionContext';
-import { useD150 } from '../api/hooks';
+import { useD150, type D150Shape } from '../api/hooks';
 import { formatColones } from '../lib/money';
-
-// ---------------------------------------------------------------------------
-// Types for the real nested shape returned by motor/d150.py
-// ---------------------------------------------------------------------------
-
-interface PorTasaEntry {
-  base: string | number;
-  iva: string | number;
-}
-
-interface SeccionBase {
-  por_tasa: Record<string, PorTasaEntry>;
-  exentas: string | number;
-  no_sujetas: string | number;
-  total_gravadas: string | number;
-  total_general: string | number;
-}
-
-interface SeccionVentas extends SeccionBase {
-  total_impuesto: string | number;
-}
-
-interface SeccionCompras extends SeccionBase {
-  total_credito: string | number;
-  no_deducibles?: string | number;
-  tiquetes_excluidos_n?: number;
-  tiquetes_excluidos_iva?: string | number;
-}
-
-interface Liquidacion {
-  debito_fiscal: string | number;
-  credito_fiscal: string | number;
-  impuesto_neto: string | number;
-  estado: string;
-}
-
-interface D150Shape {
-  ventas: SeccionVentas;
-  compras: SeccionCompras;
-  liquidacion: Liquidacion;
-}
 
 // ---------------------------------------------------------------------------
 // Rendering helpers
@@ -64,11 +23,8 @@ interface Row {
   isMoneda: boolean; // true → format with ₡ in preciso view
 }
 
-function buildRows(d: D150Shape, isPreciso: boolean): Row[] {
+function buildRows(d: D150Shape): Row[] {
   const rows: Row[] = [];
-  const fmt = (v: string | number) =>
-    isPreciso ? formatColones(String(v)) : String(v);
-  const fmtInt = (v: string | number) => String(v); // OVI: always plain integer
 
   const addMoney = (label: string, v: string | number) =>
     rows.push({ label, value: v, isMoneda: true });
@@ -116,9 +72,6 @@ function buildRows(d: D150Shape, isPreciso: boolean): Row[] {
   addPlain('  Estado', d.liquidacion.estado);
 
   return rows;
-
-  // suppress unused warning — fmt/fmtInt are conceptually referenced via isMoneda
-  void fmt; void fmtInt;
 }
 
 // ---------------------------------------------------------------------------
@@ -148,12 +101,9 @@ export function D150Page() {
   }
 
   const isPreciso = vista === 'preciso';
-  const raw = isPreciso ? data?.preciso : data?.ovi;
+  const d = isPreciso ? data?.preciso : data?.ovi;
 
-  // Safely cast — the shape matches D150Shape when the API works
-  const d = raw as unknown as D150Shape | undefined;
-
-  const rows = d ? buildRows(d, isPreciso) : [];
+  const rows = d ? buildRows(d) : [];
 
   return (
     <Stack>
