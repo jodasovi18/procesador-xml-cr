@@ -12,7 +12,7 @@ const AuthContext = createContext<AuthState | null>(null);
 interface TokenResponse { access_token: string }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setTok] = useState<string | null>(() => getToken());
+  const [token, setTokenState] = useState<string | null>(() => getToken());
 
   async function login(usuario: string, clave: string) {
     // OAuth2 password flow: form-urlencoded, sin Bearer.
@@ -26,12 +26,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     if (!data) throw new ApiError(500, 'respuesta vacía del login');
     setToken(data.access_token);
-    setTok(data.access_token);
+    setTokenState(data.access_token);
   }
 
   function logout() {
     clearToken();
-    setTok(null);
+    setTokenState(null);
   }
 
   return (
