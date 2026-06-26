@@ -21,7 +21,7 @@ export function clearToken(): void {
   localStorage.removeItem(TOKEN_KEY);
 }
 
-export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T | undefined> {
   const headers = new Headers(options.headers);
   const token = getToken();
   if (token) headers.set('Authorization', `Bearer ${token}`);
@@ -34,12 +34,19 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
     let detail = res.statusText;
     try {
       const body = await res.json();
-      if (body && typeof body.detail === 'string') detail = body.detail;
+      if (typeof body?.detail === 'string') {
+        detail = body.detail;
+      } else if (Array.isArray(body?.detail)) {
+        detail = body.detail
+          .map((d: { msg?: string }) => d?.msg)
+          .filter(Boolean)
+          .join('; ') || res.statusText;
+      }
     } catch {
       // respuesta sin cuerpo JSON
     }
     throw new ApiError(res.status, detail);
   }
-  if (res.status === 204) return undefined as T;
+  if (res.status === 204) return undefined;
   return (await res.json()) as T;
 }

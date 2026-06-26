@@ -41,6 +41,18 @@ describe('apiFetch', () => {
       .rejects.toMatchObject({ status: 422, detail: 'XML inválido' });
   });
 
+  it('devuelve undefined en 204', async () => {
+    server.use(http.delete('/api/x/1', () => new HttpResponse(null, { status: 204 })));
+    await expect(apiFetch('/api/x/1', { method: 'DELETE' })).resolves.toBeUndefined();
+  });
+
+  it('arma el detalle desde el array de errores de validación (422 Pydantic)', async () => {
+    server.use(http.post('/api/y', () =>
+      HttpResponse.json({ detail: [{ loc: ['body', 'x'], msg: 'campo requerido', type: 'missing' }] }, { status: 422 })));
+    await expect(apiFetch('/api/y', { method: 'POST' }))
+      .rejects.toMatchObject({ status: 422, detail: 'campo requerido' });
+  });
+
   it('no fija Content-Type para FormData', async () => {
     let ct: string | null = 'unset';
     server.use(http.post('/api/up', async ({ request }) => {
