@@ -7,16 +7,13 @@ import { AuthProvider } from './AuthContext';
 import { LoginPage } from './LoginPage';
 import { getToken, clearToken } from '../api/client';
 
-// jsdom resuelve URLs relativas contra http://localhost:3000 (puerto de Vite)
-const LOGIN_URL = 'http://localhost:3000/auth/login';
-
 const server = setupServer();
 beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }));
 afterAll(() => server.close());
 afterEach(() => { server.resetHandlers(); clearToken(); });
 
 it('guarda el token tras un login exitoso', async () => {
-  server.use(http.post(LOGIN_URL, () =>
+  server.use(http.post('*/auth/login', () =>
     HttpResponse.json({ access_token: 'tok-1', token_type: 'bearer' })));
   renderWithProviders(<AuthProvider><LoginPage /></AuthProvider>);
   await userEvent.type(screen.getByLabelText('Usuario'), 'admin');
@@ -26,7 +23,7 @@ it('guarda el token tras un login exitoso', async () => {
 });
 
 it('muestra el detalle de error en 401', async () => {
-  server.use(http.post(LOGIN_URL, () =>
+  server.use(http.post('*/auth/login', () =>
     HttpResponse.json({ detail: 'Usuario o contraseña incorrectos' }, { status: 401 })));
   renderWithProviders(<AuthProvider><LoginPage /></AuthProvider>);
   await userEvent.type(screen.getByLabelText('Usuario'), 'x');
