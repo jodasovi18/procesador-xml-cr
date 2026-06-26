@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '../test/utils';
 import { SubidaPage } from './SubidaPage';
@@ -30,19 +30,12 @@ it('muestra el reporte por archivo y los totales tras subir', async () => {
 
   const input = document.querySelector('input[type="file"]') as HTMLInputElement;
 
-  // Try userEvent.upload first; if that doesn't trigger Mantine's onDrop,
-  // fall back to fireEvent.change which directly fires the change event.
   const files = [
     new File(['<xml/>'], 'a.xml', { type: 'text/xml' }),
     new File(['<xml/>'], 'b.xml', { type: 'text/xml' }),
   ];
 
-  try {
-    await userEvent.upload(input, files);
-  } catch {
-    // Fallback: fire change event directly
-    fireEvent.change(input, { target: { files } });
-  }
+  await userEvent.upload(input, files);
 
   expect(await screen.findByText('a.xml')).toBeInTheDocument();
   expect(await screen.findByText('XML inválido')).toBeInTheDocument();

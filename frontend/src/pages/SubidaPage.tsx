@@ -39,6 +39,7 @@ export function SubidaPage() {
         onDrop={onDrop}
         loading={ingesta.isPending}
         accept={['text/xml', 'application/xml', 'application/zip', 'application/x-zip-compressed']}
+        aria-label="Seleccionar archivos XML o ZIP"
       >
         <Text ta="center" p="xl">
           Arrastrá archivos XML o ZIP, o hacé clic para elegir
