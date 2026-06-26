@@ -38,7 +38,9 @@ it('edita una regla con PUT al id correcto', async () => {
   }));
   renderWithProviders(conCliente(<ReglasPage />));
   await userEvent.click(await screen.findByRole('button', { name: 'Editar' }));
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }));
+  const dialog = await screen.findByRole('dialog');
+  expect(within(dialog).getByLabelText('Cédula')).toHaveValue('3101030042');
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }));
   await waitFor(() => expect(putId).toBe('5'));
 });
 

@@ -28,9 +28,11 @@ export function ReglasPage() {
   const crear = useCrearRegla();
   const editar = useEditarRegla();
   const eliminar = useEliminarRegla();
+  // undefined = modal cerrado; null = creando; Regla = editando
   const [editando, setEditando] = useState<Regla | null | undefined>(undefined);
   const [aEliminar, setAEliminar] = useState<Regla | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [errorEliminar, setErrorEliminar] = useState<string | null>(null);
   const form = useForm<FormValues>({
     initialValues: VACIO,
     validate: {
@@ -83,10 +85,12 @@ export function ReglasPage() {
 
   async function confirmarEliminar() {
     if (!aEliminar || clienteId == null) return;
+    setErrorEliminar(null);
     try {
       await eliminar.mutateAsync({ id: aEliminar.id, clienteId });
-    } finally {
       setAEliminar(null);
+    } catch (e) {
+      setErrorEliminar(e instanceof ApiError ? e.detail : 'Error al eliminar');
     }
   }
 
@@ -127,7 +131,7 @@ export function ReglasPage() {
               <Table.Td>
                 <Group gap="xs">
                   <Button variant="subtle" size="xs" onClick={() => abrirEditar(r)}>Editar</Button>
-                  <Button variant="subtle" color="red" size="xs" onClick={() => setAEliminar(r)}>Eliminar</Button>
+                  <Button variant="subtle" color="red" size="xs" onClick={() => { setErrorEliminar(null); setAEliminar(r); }}>Eliminar</Button>
                 </Group>
               </Table.Td>
             </Table.Tr>
@@ -153,8 +157,9 @@ export function ReglasPage() {
         </form>
       </Modal>
 
-      <Modal opened={aEliminar !== null} onClose={() => setAEliminar(null)} title="Eliminar regla">
+      <Modal opened={aEliminar !== null} onClose={() => { setAEliminar(null); setErrorEliminar(null); }} title="Eliminar regla">
         <Text>¿Eliminar esta regla de clasificación?</Text>
+        {errorEliminar && <Alert color="red">{errorEliminar}</Alert>}
         <Group justify="flex-end" mt="md">
           <Button variant="default" onClick={() => setAEliminar(null)}>Cancelar</Button>
           <Button color="red" loading={eliminar.isPending} onClick={confirmarEliminar}>Eliminar</Button>
