@@ -12,6 +12,7 @@ const LINKS = [
   { to: '/subida', label: 'Subida XML' },
   { to: '/resumen', label: 'Resumen' },
   { to: '/d150', label: 'D-150' },
+  { to: '/reglas', label: 'Reglas' },
 ];
 
 function NavItem({ to, label }: { to: string; label: string }) {
