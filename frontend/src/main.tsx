@@ -10,6 +10,8 @@ import '@mantine/notifications/styles.css';
 import '@mantine/dates/styles.css';
 import { theme } from './theme';
 import { App } from './App';
+import { AuthProvider } from './auth/AuthContext';
+import { SeleccionProvider } from './context/SeleccionContext';
 
 const queryClient = new QueryClient();
 
@@ -19,7 +21,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <Notifications />
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <App />
+          <AuthProvider>
+            <SeleccionProvider>
+              <App />
+            </SeleccionProvider>
+          </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>
     </MantineProvider>
