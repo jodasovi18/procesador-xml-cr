@@ -6,7 +6,7 @@ const fmt = new Intl.NumberFormat('es-ES', {
   maximumFractionDigits: 2,
 });
 
-export function formatColones(value: string): string {
+export function formatColones(value: string | null | undefined): string {
   if (value === undefined || value === null || value.trim() === '') return '—';
   const n = Number(value);
   if (Number.isNaN(n)) return '—';

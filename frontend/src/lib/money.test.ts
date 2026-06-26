@@ -14,4 +14,7 @@ describe('formatColones', () => {
     expect(formatColones('')).toBe('—');
     expect(formatColones('abc')).toBe('—');
   });
+  it('formatea montos negativos (notas de crédito)', () => {
+    expect(formatColones('-1234.56')).toBe('₡-1234,56');
+  });
 });
