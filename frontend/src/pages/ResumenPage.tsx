@@ -31,7 +31,7 @@ function TablaClasificacion({ clienteId, periodo, rol }: { clienteId: number | n
       <Table.Tbody>
         {Object.entries(data ?? {}).flatMap(([clas, tasas]) =>
           Object.entries(tasas).map(([tasa, v]) => (
-            <Table.Tr key={clas + tasa}>
+            <Table.Tr key={`${clas}||${tasa}`}>
               <Table.Td>{clas}</Table.Td><Table.Td>{tasa}</Table.Td>
               <Table.Td>{formatColones(v.base)}</Table.Td><Table.Td>{formatColones(v.iva)}</Table.Td>
             </Table.Tr>
