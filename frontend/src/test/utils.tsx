@@ -12,7 +12,7 @@ export function renderWithProviders(ui: ReactElement, { route = '/' } = {}) {
   });
   function Wrapper({ children }: { children: ReactNode }) {
     return (
-      <MantineProvider theme={theme}>
+      <MantineProvider theme={theme} env="test">
         <Notifications />
         <QueryClientProvider client={queryClient}>
           <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
