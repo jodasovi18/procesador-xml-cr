@@ -128,20 +128,18 @@ export function useD150(clienteId: number | null, periodo: string | null) {
 
 /**
  * Sube un lote de archivos XML/ZIP.
- * Devuelve el array `archivos` del reporte (ResultadoArchivo[]).
+ * Devuelve el `LoteResponse` completo: totales (total/nuevos/actualizados/omitidos/errores)
+ * y `.archivos` con el detalle por archivo (ResultadoArchivo[]).
  * Invalida resumen, resumen-clasificacion y d150 al terminar.
  */
 export function useIngestaLote() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (archivos: File[]): Promise<ResultadoArchivo[]> => {
+    mutationFn: async (archivos: File[]) => {
       const fd = new FormData();
       for (const f of archivos) fd.append('archivos', f);
-      const resp = await apiFetch<LoteResponse>('/api/ingesta/lote', {
-        method: 'POST',
-        body: fd,
-      });
-      return resp?.archivos ?? [];
+      return (await apiFetch<LoteResponse>('/api/ingesta/lote', { method: 'POST', body: fd }))
+        ?? { total: 0, nuevos: 0, actualizados: 0, omitidos: 0, errores: 0, archivos: [] };
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['resumen'] });

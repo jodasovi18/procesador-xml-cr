@@ -95,7 +95,7 @@ it('useCrearCliente llama POST y devuelve el cliente creado', async () => {
   expect(result.current.data?.nombre).toBe('Test SA');
 });
 
-it('useIngestaLote devuelve el array archivos del reporte', async () => {
+it('useIngestaLote devuelve el LoteResponse completo (totales + archivos)', async () => {
   server.use(
     http.post('*/api/ingesta/lote', () =>
       HttpResponse.json({
@@ -104,14 +104,15 @@ it('useIngestaLote devuelve el array archivos del reporte', async () => {
         actualizados: 0,
         omitidos: 0,
         errores: 0,
-        archivos: [{ archivo: 'fe_test.xml', estado: 'nuevo', clave: 'abc123', rol: 'compra', cliente_id: 1 }],
+        archivos: [{ archivo: 'a.xml', estado: 'nuevo' }],
       })
     )
   );
   const { result } = renderHook(() => useIngestaLote(), { wrapper });
-  const file = new File(['<xml/>'], 'fe_test.xml', { type: 'text/xml' });
+  const file = new File(['<xml/>'], 'a.xml', { type: 'text/xml' });
   result.current.mutate([file]);
   await waitFor(() => expect(result.current.isSuccess).toBe(true));
-  expect(result.current.data?.[0].archivo).toBe('fe_test.xml');
-  expect(result.current.data?.[0].estado).toBe('nuevo');
+  expect(result.current.data?.total).toBe(1);
+  expect(result.current.data?.archivos[0].archivo).toBe('a.xml');
+  expect(result.current.data?.archivos[0].estado).toBe('nuevo');
 });
