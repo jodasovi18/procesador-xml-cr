@@ -26,7 +26,8 @@ it('lista clientes y muestra 409 inline al duplicar cédula', async () => {
     if (!el) throw new Error('cliente-nombre input not found');
     return el;
   });
-  const cedulaInput = document.getElementById('cliente-cedula') as HTMLInputElement;
+  const cedulaInput = document.getElementById('cliente-cedula') as HTMLInputElement | null;
+  if (!cedulaInput) throw new Error('cliente-cedula input no encontrado');
   await userEvent.type(nombreInput, 'Otro');
   await userEvent.type(cedulaInput, '3101');
   await userEvent.click(screen.getByRole('button', { name: 'Guardar' }));

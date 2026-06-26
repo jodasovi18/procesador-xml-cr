@@ -72,7 +72,7 @@ export function ClientesPage() {
 
       <Modal
         opened={abierto}
-        onClose={() => setAbierto(false)}
+        onClose={() => { setAbierto(false); form.reset(); setError(null); }}
         title="Nuevo cliente"
         transitionProps={{ duration: 0 }}
       >
