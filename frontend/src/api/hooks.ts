@@ -167,6 +167,73 @@ export function useD150(clienteId: number | null, periodo: string | null) {
   });
 }
 
+// ---------------------------------------------------------------------------
+// Reglas types
+// ---------------------------------------------------------------------------
+
+export interface Regla {
+  id: number;
+  cliente_id: number;
+  cedula: string | null;
+  cabys: string | null;
+  rol: string | null;
+  clasificacion: string;
+  sub_clasificacion: string | null;
+}
+
+export interface ReglaCreate {
+  cliente_id: number;
+  cedula?: string | null;
+  cabys?: string | null;
+  rol?: string | null;
+  clasificacion: string;
+  sub_clasificacion?: string | null;
+}
+
+// ---------------------------------------------------------------------------
+// Reglas hooks
+// ---------------------------------------------------------------------------
+
+/** Lista las reglas de clasificación de un cliente. No ejecuta si clienteId es null. */
+export function useReglas(clienteId: number | null) {
+  return useQuery({
+    queryKey: ['reglas', clienteId],
+    enabled: clienteId != null,
+    queryFn: async () =>
+      (await apiFetch<Regla[]>('/api/reglas' + qs({ cliente_id: clienteId! }))) ?? [],
+  });
+}
+
+/** Crea una regla de clasificación. Invalida la lista al terminar. */
+export function useCrearRegla() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: ReglaCreate) =>
+      apiFetch<Regla>('/api/reglas', { method: 'POST', body: JSON.stringify(data) }),
+    onSuccess: (_d, vars) => qc.invalidateQueries({ queryKey: ['reglas', vars.cliente_id] }),
+  });
+}
+
+/** Edita una regla existente. Invalida la lista al terminar. */
+export function useEditarRegla() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: ReglaCreate }) =>
+      apiFetch<Regla>(`/api/reglas/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    onSuccess: (_d, vars) => qc.invalidateQueries({ queryKey: ['reglas', vars.data.cliente_id] }),
+  });
+}
+
+/** Elimina una regla. Invalida la lista al terminar. */
+export function useEliminarRegla() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id }: { id: number; clienteId: number }) =>
+      apiFetch<void>(`/api/reglas/${id}`, { method: 'DELETE' }),
+    onSuccess: (_d, vars) => qc.invalidateQueries({ queryKey: ['reglas', vars.clienteId] }),
+  });
+}
+
 /**
  * Sube un lote de archivos XML/ZIP.
  * Devuelve el `LoteResponse` completo: totales (total/nuevos/actualizados/omitidos/errores)
