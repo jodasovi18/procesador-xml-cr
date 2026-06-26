@@ -32,6 +32,15 @@ def listar_reglas(cliente_id: int, db: Session = Depends(get_db),
             .order_by(ReglaClasificacion.id))
     return list(db.scalars(stmt))
 
+@router.delete("/{regla_id}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar_regla(regla_id: int, db: Session = Depends(get_db),
+                   _: Usuario = Depends(get_current_user)):
+    regla = db.get(ReglaClasificacion, regla_id)
+    if regla is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="no existe")
+    db.delete(regla)
+    db.commit()
+
 @router.put("/{regla_id}", response_model=ReglaOut)
 def editar_regla(regla_id: int, data: ReglaCreate, db: Session = Depends(get_db),
                  _: Usuario = Depends(get_current_user)):

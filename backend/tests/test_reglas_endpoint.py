@@ -99,3 +99,17 @@ def test_editar_regla_sin_ced_ni_cabys_422(client, db_session):
 
 def test_editar_regla_sin_token_401(client):
     assert client.put("/api/reglas/1", json={"cliente_id": 1, "cedula": "1", "clasificacion": "Compras"}).status_code == 401
+
+def test_eliminar_regla(client, db_session):
+    token = _token(client, db_session); cli = _cliente(db_session)
+    rid = client.post("/api/reglas", json={"cliente_id": cli.id, "cedula": "3101030042", "clasificacion": "Compras"}, headers=_auth(token)).json()["id"]
+    assert client.delete(f"/api/reglas/{rid}", headers=_auth(token)).status_code == 204
+    lst = client.get(f"/api/reglas?cliente_id={cli.id}", headers=_auth(token)).json()
+    assert all(r["id"] != rid for r in lst)
+
+def test_eliminar_regla_inexistente_404(client, db_session):
+    token = _token(client, db_session); _cliente(db_session)
+    assert client.delete("/api/reglas/999999", headers=_auth(token)).status_code == 404
+
+def test_eliminar_regla_sin_token_401(client):
+    assert client.delete("/api/reglas/1").status_code == 401
