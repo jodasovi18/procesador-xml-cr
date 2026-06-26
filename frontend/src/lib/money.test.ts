@@ -15,6 +15,14 @@ describe('formatColones', () => {
     expect(formatColones('abc')).toBe('—');
   });
   it('formatea montos negativos (notas de crédito)', () => {
+    // es-ES NO agrupa números de 4 dígitos (minimumGroupingDigits), ni positivos ni negativos.
     expect(formatColones('-1234.56')).toBe('₡-1234,56');
+  });
+  it('agrupa los miles también en negativos grandes', () => {
+    expect(formatColones('-1234567.89')).toBe('₡-1.234.567,89');
+  });
+  it('devuelve guion para null/undefined', () => {
+    expect(formatColones(null)).toBe('—');
+    expect(formatColones(undefined)).toBe('—');
   });
 });
