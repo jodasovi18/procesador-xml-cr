@@ -57,6 +57,16 @@ it('elimina una regla con DELETE al id correcto tras confirmar', async () => {
   await waitFor(() => expect(delId).toBe('5'));
 });
 
+it('muestra error inline si falla el borrado', async () => {
+  server.use(http.delete('*/api/reglas/:id', () =>
+    HttpResponse.json({ detail: 'no se pudo eliminar' }, { status: 409 })));
+  renderWithProviders(conCliente(<ReglasPage />));
+  await userEvent.click(await screen.findByRole('button', { name: 'Eliminar' }));
+  const dialog = await screen.findByRole('dialog');
+  await userEvent.click(within(dialog).getByRole('button', { name: 'Eliminar' }));
+  expect(await screen.findByText('no se pudo eliminar')).toBeInTheDocument();
+});
+
 it('muestra 422 inline en el modal', async () => {
   server.use(http.post('*/api/reglas', () =>
     HttpResponse.json({ detail: 'clasificacion inválida' }, { status: 422 })));
