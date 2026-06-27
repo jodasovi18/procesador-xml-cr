@@ -65,3 +65,51 @@ def test_crear_regla_cliente_inexistente_422(client, db_session):
     token = _token(client, db_session)
     payload = {"cliente_id": 999999, "cedula": "3101030042", "clasificacion": "Compras"}
     assert client.post("/api/reglas", json=payload, headers=_auth(token)).status_code == 422
+
+def test_editar_regla(client, db_session):
+    token = _token(client, db_session); cli = _cliente(db_session)
+    r = client.post("/api/reglas", json={"cliente_id": cli.id, "cedula": "3101030042", "clasificacion": "Compras"}, headers=_auth(token))
+    rid = r.json()["id"]
+    upd = {"cliente_id": cli.id, "cabys": "2310100000000", "clasificacion": "No Deducibles", "sub_clasificacion": "Combustibles"}
+    r2 = client.put(f"/api/reglas/{rid}", json=upd, headers=_auth(token))
+    assert r2.status_code == 200
+    body = r2.json()
+    assert body["id"] == rid
+    assert body["clasificacion"] == "No Deducibles"
+    assert body["cabys"] == "2310100000000"
+    assert body["sub_clasificacion"] == "Combustibles"
+    assert body["cedula"] is None
+
+def test_editar_regla_inexistente_404(client, db_session):
+    token = _token(client, db_session); _cliente(db_session)
+    upd = {"cliente_id": 1, "cedula": "3101030042", "clasificacion": "Compras"}
+    assert client.put("/api/reglas/999999", json=upd, headers=_auth(token)).status_code == 404
+
+def test_editar_regla_clasificacion_invalida_422(client, db_session):
+    token = _token(client, db_session); cli = _cliente(db_session)
+    rid = client.post("/api/reglas", json={"cliente_id": cli.id, "cedula": "3101030042", "clasificacion": "Compras"}, headers=_auth(token)).json()["id"]
+    upd = {"cliente_id": cli.id, "cedula": "3101030042", "clasificacion": "Inexistente"}
+    assert client.put(f"/api/reglas/{rid}", json=upd, headers=_auth(token)).status_code == 422
+
+def test_editar_regla_sin_ced_ni_cabys_422(client, db_session):
+    token = _token(client, db_session); cli = _cliente(db_session)
+    rid = client.post("/api/reglas", json={"cliente_id": cli.id, "cedula": "3101030042", "clasificacion": "Compras"}, headers=_auth(token)).json()["id"]
+    upd = {"cliente_id": cli.id, "clasificacion": "Compras"}
+    assert client.put(f"/api/reglas/{rid}", json=upd, headers=_auth(token)).status_code == 422
+
+def test_editar_regla_sin_token_401(client):
+    assert client.put("/api/reglas/1", json={"cliente_id": 1, "cedula": "1", "clasificacion": "Compras"}).status_code == 401
+
+def test_eliminar_regla(client, db_session):
+    token = _token(client, db_session); cli = _cliente(db_session)
+    rid = client.post("/api/reglas", json={"cliente_id": cli.id, "cedula": "3101030042", "clasificacion": "Compras"}, headers=_auth(token)).json()["id"]
+    assert client.delete(f"/api/reglas/{rid}", headers=_auth(token)).status_code == 204
+    lst = client.get(f"/api/reglas?cliente_id={cli.id}", headers=_auth(token)).json()
+    assert all(r["id"] != rid for r in lst)
+
+def test_eliminar_regla_inexistente_404(client, db_session):
+    token = _token(client, db_session); _cliente(db_session)
+    assert client.delete("/api/reglas/999999", headers=_auth(token)).status_code == 404
+
+def test_eliminar_regla_sin_token_401(client):
+    assert client.delete("/api/reglas/1").status_code == 401

@@ -3,7 +3,7 @@ import { setupServer } from 'msw/node';
 import { renderHook, waitFor } from '@testing-library/react';
 import { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useClientes, useResumen, useResumenClasificacion, useD150, useCrearCliente, useIngestaLote } from './hooks';
+import { useClientes, useResumen, useResumenClasificacion, useD150, useCrearCliente, useIngestaLote, useReglas, useEditarRegla } from './hooks';
 
 const server = setupServer();
 beforeAll(() => server.listen());
@@ -115,4 +115,32 @@ it('useIngestaLote devuelve el LoteResponse completo (totales + archivos)', asyn
   expect(result.current.data?.total).toBe(1);
   expect(result.current.data?.archivos[0].archivo).toBe('a.xml');
   expect(result.current.data?.archivos[0].estado).toBe('nuevo');
+});
+
+it('useReglas pasa cliente_id y devuelve la lista', async () => {
+  server.use(http.get('*/api/reglas', ({ request }) => {
+    const cid = new URL(request.url).searchParams.get('cliente_id');
+    return HttpResponse.json([{ id: 1, cliente_id: Number(cid), cedula: '310', cabys: null, rol: null, clasificacion: 'Compras', sub_clasificacion: null }]);
+  }));
+  const { result } = renderHook(() => useReglas(7), { wrapper });
+  await waitFor(() => expect(result.current.isSuccess).toBe(true));
+  expect(result.current.data?.[0].clasificacion).toBe('Compras');
+  expect(result.current.data?.[0].cliente_id).toBe(7);
+});
+
+it('useReglas no dispara sin cliente', () => {
+  const { result } = renderHook(() => useReglas(null), { wrapper });
+  expect(result.current.fetchStatus).toBe('idle');
+});
+
+it('useEditarRegla hace PUT al id correcto', async () => {
+  let metodo = ''; let ruta = '';
+  server.use(http.put('*/api/reglas/:id', ({ request, params }) => {
+    metodo = request.method; ruta = String(params.id);
+    return HttpResponse.json({ id: Number(params.id), cliente_id: 7, cedula: null, cabys: '231', rol: null, clasificacion: 'No Deducibles', sub_clasificacion: null });
+  }));
+  const { result } = renderHook(() => useEditarRegla(), { wrapper });
+  await result.current.mutateAsync({ id: 5, data: { cliente_id: 7, cabys: '231', clasificacion: 'No Deducibles' } });
+  expect(metodo).toBe('PUT');
+  expect(ruta).toBe('5');
 });
