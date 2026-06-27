@@ -54,6 +54,7 @@ function Panel({ por, clienteId, periodo, rol }: { por: PorPreclasificacion; cli
     qc.invalidateQueries({ queryKey: ['preclasificacion'] });
     qc.invalidateQueries({ queryKey: ['resumen'] });
     qc.invalidateQueries({ queryKey: ['resumen-clasificacion'] });
+    qc.invalidateQueries({ queryKey: ['d150'] });
   }
 
   if (isLoading) return <Loader />;

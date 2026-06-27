@@ -40,7 +40,7 @@ it('useResumen pasa cliente/periodo/rol como query params', async () => {
   const { result } = renderHook(() => useResumen(1, '2026-05', 'compra'), { wrapper });
   await waitFor(() => expect(result.current.isSuccess).toBe(true));
   expect(url).toContain('cliente_id=1');
-  expect(url).toContain('periodo=2026-05');
+  expect(url).toContain('periodo=202605');
   expect(url).toContain('rol=compra');
   expect(result.current.data?.['Bienes']?.base).toBe('100');
 });
@@ -155,7 +155,7 @@ it('usePreclasificacion pasa cliente_id/periodo/rol/por', async () => {
   await waitFor(() => expect(result.current.isSuccess).toBe(true));
   expect(result.current.data?.[0].clave).toBe('2310100');
   expect(url).toContain('cliente_id=7');
-  expect(url).toContain('periodo=2026-05');
+  expect(url).toContain('periodo=202605');
   expect(url).toContain('rol=compra');
   expect(url).toContain('por=cabys');
 });

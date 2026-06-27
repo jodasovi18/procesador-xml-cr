@@ -106,6 +106,9 @@ const qs = (params: Record<string, string | number>): string =>
     Object.entries(params).map(([k, v]) => [k, String(v)])
   ).toString();
 
+// El backend guarda Comprobante.periodo como "YYYYMM"; el front maneja "YYYY-MM".
+const periodoApi = (p: string) => p.replace(/-/g, '');
+
 // ---------------------------------------------------------------------------
 // Hooks
 // ---------------------------------------------------------------------------
@@ -138,7 +141,7 @@ export function useResumen(clienteId: number | null, periodo: string | null, rol
     enabled: clienteId != null && periodo != null,
     queryFn: async () =>
       (await apiFetch<Resumen>(
-        '/api/resumen' + qs({ cliente_id: clienteId!, periodo: periodo!, rol })
+        '/api/resumen' + qs({ cliente_id: clienteId!, periodo: periodoApi(periodo!), rol })
       )) ?? ({} as Resumen),
   });
 }
@@ -150,7 +153,7 @@ export function useResumenClasificacion(clienteId: number | null, periodo: strin
     enabled: clienteId != null && periodo != null,
     queryFn: async () =>
       (await apiFetch<ResumenClasificacion>(
-        '/api/resumen/clasificacion' + qs({ cliente_id: clienteId!, periodo: periodo!, rol })
+        '/api/resumen/clasificacion' + qs({ cliente_id: clienteId!, periodo: periodoApi(periodo!), rol })
       )) ?? ({} as ResumenClasificacion),
   });
 }
@@ -162,7 +165,7 @@ export function useD150(clienteId: number | null, periodo: string | null) {
     enabled: clienteId != null && periodo != null,
     queryFn: async () =>
       (await apiFetch<D150Response>(
-        '/api/d150' + qs({ cliente_id: clienteId!, periodo: periodo! })
+        '/api/d150' + qs({ cliente_id: clienteId!, periodo: periodoApi(periodo!) })
       )) ?? ({ preciso: {}, ovi: {} } as D150Response),
   });
 }
@@ -257,7 +260,7 @@ export function usePreclasificacion(
     enabled: clienteId != null && periodo != null,
     queryFn: async () =>
       (await apiFetch<GrupoPreclasificacion[]>(
-        '/api/preclasificacion' + qs({ cliente_id: clienteId!, periodo: periodo!, rol, por }),
+        '/api/preclasificacion' + qs({ cliente_id: clienteId!, periodo: periodoApi(periodo!), rol, por }),
       )) ?? [],
   });
 }
