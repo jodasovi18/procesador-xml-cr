@@ -6,6 +6,7 @@ import { useSeleccion, Rol } from '../context/SeleccionContext';
 import { usePreclasificacion, useCrearRegla, PorPreclasificacion, ReglaCreate } from '../api/hooks';
 import { formatColones } from '../lib/money';
 
+// Mantener en sync con ReglasPage.tsx — extraer a un módulo de constantes si aparece un tercer consumidor.
 const CLASIFICACIONES = ['Compras', 'Gastos', 'Bienes de Capital', 'No Deducibles', 'Sin Clasificar'];
 
 interface Asignacion {
@@ -44,11 +45,15 @@ function Panel({ por, clienteId, periodo, rol }: { por: PorPreclasificacion; cli
       color: fail ? 'orange' : 'teal',
       message: `${ok} regla(s) creada(s)${fail ? `, ${fail} con error` : ''}`,
     });
-    setAsig({});
+    const failedKeys = new Set(
+      results
+        .map((r, i) => (r.status === 'rejected' ? elegidas[i][0] : null))
+        .filter((k): k is string => k !== null),
+    );
+    setAsig((a) => Object.fromEntries(Object.entries(a).filter(([k]) => failedKeys.has(k))));
     qc.invalidateQueries({ queryKey: ['preclasificacion'] });
     qc.invalidateQueries({ queryKey: ['resumen'] });
     qc.invalidateQueries({ queryKey: ['resumen-clasificacion'] });
-    refetch();
   }
 
   if (isLoading) return <Loader />;
