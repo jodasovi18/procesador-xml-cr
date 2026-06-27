@@ -23,6 +23,7 @@ it('muestra los enlaces de navegación, el contenido y el selector de cliente', 
   expect(screen.getByRole('link', { name: 'Resumen' })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'D-150' })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'Reglas' })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Preclasificar' })).toBeInTheDocument();
   expect(screen.getByText('contenido')).toBeInTheDocument();
   await waitFor(() => expect(screen.getByPlaceholderText('Cliente')).toBeInTheDocument());
 });

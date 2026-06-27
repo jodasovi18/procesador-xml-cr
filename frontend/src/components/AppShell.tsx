@@ -13,6 +13,7 @@ const LINKS = [
   { to: '/resumen', label: 'Resumen' },
   { to: '/d150', label: 'D-150' },
   { to: '/reglas', label: 'Reglas' },
+  { to: '/preclasificar', label: 'Preclasificar' },
 ];
 
 function NavItem({ to, label }: { to: string; label: string }) {

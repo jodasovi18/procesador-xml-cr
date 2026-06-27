@@ -7,6 +7,7 @@ import { SubidaPage } from './pages/SubidaPage';
 import { ResumenPage } from './pages/ResumenPage';
 import { D150Page } from './pages/D150Page';
 import { ReglasPage } from './pages/ReglasPage';
+import { PreclasificarPage } from './pages/PreclasificarPage';
 
 export function App() {
   return (
@@ -23,6 +24,7 @@ export function App() {
                 <Route path="/resumen" element={<ResumenPage />} />
                 <Route path="/d150" element={<D150Page />} />
                 <Route path="/reglas" element={<ReglasPage />} />
+                <Route path="/preclasificar" element={<PreclasificarPage />} />
                 <Route path="*" element={<Navigate to="/clientes" replace />} />
               </Routes>
             </AppShell>
