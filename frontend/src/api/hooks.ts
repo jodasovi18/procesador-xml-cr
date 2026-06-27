@@ -234,6 +234,34 @@ export function useEliminarRegla() {
   });
 }
 
+// ---------------------------------------------------------------------------
+// Preclasificacion types + hook
+// ---------------------------------------------------------------------------
+
+export interface GrupoPreclasificacion {
+  clave: string;
+  etiqueta: string;
+  lineas: number;
+  base: string;
+}
+export type PorPreclasificacion = 'cabys' | 'cedula';
+
+export function usePreclasificacion(
+  clienteId: number | null,
+  periodo: string | null,
+  rol: Rol,
+  por: PorPreclasificacion,
+) {
+  return useQuery({
+    queryKey: ['preclasificacion', clienteId, periodo, rol, por],
+    enabled: clienteId != null && periodo != null,
+    queryFn: async () =>
+      (await apiFetch<GrupoPreclasificacion[]>(
+        '/api/preclasificacion' + qs({ cliente_id: clienteId!, periodo: periodo!, rol, por }),
+      )) ?? [],
+  });
+}
+
 /**
  * Sube un lote de archivos XML/ZIP.
  * Devuelve el `LoteResponse` completo: totales (total/nuevos/actualizados/omitidos/errores)

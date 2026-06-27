@@ -3,7 +3,7 @@ import { setupServer } from 'msw/node';
 import { renderHook, waitFor } from '@testing-library/react';
 import { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useClientes, useResumen, useResumenClasificacion, useD150, useCrearCliente, useIngestaLote, useReglas, useEditarRegla } from './hooks';
+import { useClientes, useResumen, useResumenClasificacion, useD150, useCrearCliente, useIngestaLote, useReglas, useEditarRegla, usePreclasificacion } from './hooks';
 
 const server = setupServer();
 beforeAll(() => server.listen());
@@ -143,4 +143,24 @@ it('useEditarRegla hace PUT al id correcto', async () => {
   await result.current.mutateAsync({ id: 5, data: { cliente_id: 7, cabys: '231', clasificacion: 'No Deducibles' } });
   expect(metodo).toBe('PUT');
   expect(ruta).toBe('5');
+});
+
+it('usePreclasificacion pasa cliente_id/periodo/rol/por', async () => {
+  let url = '';
+  server.use(http.get('*/api/preclasificacion', ({ request }) => {
+    url = new URL(request.url).search;
+    return HttpResponse.json([{ clave: '2310100', etiqueta: 'Fertilizante', lineas: 2, base: '150' }]);
+  }));
+  const { result } = renderHook(() => usePreclasificacion(7, '2026-05', 'compra', 'cabys'), { wrapper });
+  await waitFor(() => expect(result.current.isSuccess).toBe(true));
+  expect(result.current.data?.[0].clave).toBe('2310100');
+  expect(url).toContain('cliente_id=7');
+  expect(url).toContain('periodo=2026-05');
+  expect(url).toContain('rol=compra');
+  expect(url).toContain('por=cabys');
+});
+
+it('usePreclasificacion no dispara sin cliente o período', () => {
+  const { result } = renderHook(() => usePreclasificacion(null, '2026-05', 'compra', 'cabys'), { wrapper });
+  expect(result.current.fetchStatus).toBe('idle');
 });
