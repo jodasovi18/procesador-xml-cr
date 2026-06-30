@@ -49,6 +49,7 @@ export function EntradasManualesPage() {
 
   async function onSubmit(values: FormValues) {
     if (clienteId == null || periodo == null) return;
+    if (editando === undefined) return; // el form sólo se monta dentro del modal abierto
     setError(null);
     const payload: EntradaManualCreate = {
       cliente_id: clienteId,
