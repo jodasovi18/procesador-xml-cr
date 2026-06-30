@@ -6,7 +6,8 @@ from app.db import get_db
 from app.auth.deps import get_current_user
 from app.models.usuario import Usuario
 from app.models.entrada_manual import EntradaManual
-from app.schemas.entrada_manual import EntradaManualCreate, EntradaManualOut
+from decimal import Decimal
+from app.schemas.entrada_manual import EntradaManualCreate, EntradaManualOut, EntradaManualListOut, iva_entrada
 
 router = APIRouter(prefix="/api/entradas-manuales", tags=["entradas-manuales"])
 
@@ -24,14 +25,17 @@ def crear(data: EntradaManualCreate, db: Session = Depends(get_db),
     db.refresh(e)
     return e
 
-@router.get("", response_model=list[EntradaManualOut])
+@router.get("", response_model=EntradaManualListOut)
 def listar(cliente_id: int, periodo: str, rol: str | None = None,
            db: Session = Depends(get_db), _: Usuario = Depends(get_current_user)):
     stmt = select(EntradaManual).where(
         EntradaManual.cliente_id == cliente_id, EntradaManual.periodo == periodo)
     if rol is not None:
         stmt = stmt.where(EntradaManual.rol == rol)
-    return list(db.scalars(stmt.order_by(EntradaManual.id)))
+    entradas = list(db.scalars(stmt.order_by(EntradaManual.id)))
+    total_monto = sum((e.monto for e in entradas), Decimal("0"))
+    total_iva = sum((iva_entrada(e.monto, e.tarifa) for e in entradas), Decimal("0"))
+    return EntradaManualListOut(entradas=entradas, total_monto=str(total_monto), total_iva=str(total_iva))
 
 @router.delete("/{entrada_id}", status_code=status.HTTP_204_NO_CONTENT)
 def eliminar(entrada_id: int, db: Session = Depends(get_db),

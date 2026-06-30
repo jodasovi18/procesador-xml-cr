@@ -1,5 +1,10 @@
 from decimal import Decimal
-from pydantic import BaseModel, ConfigDict, field_serializer, field_validator
+from pydantic import BaseModel, ConfigDict, computed_field, field_serializer, field_validator
+
+Q5 = Decimal("0.00001")
+
+def iva_entrada(monto: Decimal, tarifa: Decimal) -> Decimal:
+    return (monto * tarifa / Decimal("100")).quantize(Q5)
 
 class EntradaManualCreate(BaseModel):
     cliente_id: int
@@ -51,3 +56,12 @@ class EntradaManualOut(BaseModel):
     @field_serializer("monto", "tarifa")
     def _ser_dec(self, v: Decimal) -> str:
         return str(v)
+
+    @computed_field
+    def iva(self) -> str:
+        return str(iva_entrada(self.monto, self.tarifa))
+
+class EntradaManualListOut(BaseModel):
+    entradas: list[EntradaManualOut]
+    total_monto: str
+    total_iva: str

@@ -44,11 +44,26 @@ def test_crear_listar_eliminar_entrada(client, db_session):
     assert isinstance(r.json()["monto"], str) and Decimal(r.json()["monto"]) == Decimal("2000")
     assert isinstance(r.json()["tarifa"], str) and Decimal(r.json()["tarifa"]) == Decimal("13")
     lst = client.get(f"/api/entradas-manuales?cliente_id={cli.id}&periodo=202605", headers=_auth(token))
-    assert lst.status_code == 200 and len(lst.json()) == 1
+    assert lst.status_code == 200 and len(lst.json()["entradas"]) == 1
     d = client.delete(f"/api/entradas-manuales/{eid}", headers=_auth(token))
     assert d.status_code == 204
     lst2 = client.get(f"/api/entradas-manuales?cliente_id={cli.id}&periodo=202605", headers=_auth(token))
-    assert len(lst2.json()) == 0
+    assert len(lst2.json()["entradas"]) == 0
+
+def test_get_incluye_iva_por_fila_y_totales(client, db_session):
+    token = _token(client, db_session); cli = _cliente(db_session)
+    client.post("/api/entradas-manuales", json={"cliente_id": cli.id, "periodo": "202605", "rol": "venta",
+                "monto": "2000", "tarifa": "13"}, headers=_auth(token))
+    client.post("/api/entradas-manuales", json={"cliente_id": cli.id, "periodo": "202605", "rol": "venta",
+                "monto": "500", "tarifa": "0", "no_sujeto": True}, headers=_auth(token))
+    r = client.get(f"/api/entradas-manuales?cliente_id={cli.id}&periodo=202605&rol=venta", headers=_auth(token))
+    assert r.status_code == 200
+    body = r.json()
+    assert len(body["entradas"]) == 2
+    ivas = {Decimal(e["iva"]) for e in body["entradas"]}
+    assert Decimal("260") in ivas and Decimal("0") in ivas
+    assert Decimal(body["total_monto"]) == Decimal("2500")
+    assert Decimal(body["total_iva"]) == Decimal("260")
 
 def test_crear_entrada_rol_invalido_422(client, db_session):
     token = _token(client, db_session); cli = _cliente(db_session)
