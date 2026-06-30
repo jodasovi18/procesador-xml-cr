@@ -38,7 +38,7 @@ export function EntradasManualesPage() {
   }
   function abrirEditar(e: EntradaManual) {
     setError(null);
-    form.setValues({ descripcion: e.descripcion ?? '', monto: e.monto, tarifa: e.tarifa, no_sujeto: e.no_sujeto, deducible: e.deducible });
+    form.setValues({ descripcion: e.descripcion ?? '', monto: Number(e.monto), tarifa: Number(e.tarifa), no_sujeto: e.no_sujeto, deducible: e.deducible });
     setEditando(e);
   }
   function cerrar() {
