@@ -107,7 +107,7 @@ const qs = (params: Record<string, string | number>): string =>
   ).toString();
 
 // El backend guarda Comprobante.periodo como "YYYYMM"; el front maneja "YYYY-MM".
-const periodoApi = (p: string) => p.replace(/-/g, '');
+export const periodoApi = (p: string) => p.replace(/-/g, '');
 
 // ---------------------------------------------------------------------------
 // Hooks
@@ -262,6 +262,89 @@ export function usePreclasificacion(
       (await apiFetch<GrupoPreclasificacion[]>(
         '/api/preclasificacion' + qs({ cliente_id: clienteId!, periodo: periodoApi(periodo!), rol, por }),
       )) ?? [],
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Entradas Manuales types + hooks
+// ---------------------------------------------------------------------------
+
+export interface EntradaManual {
+  id: number;
+  cliente_id: number;
+  periodo: string;
+  rol: string;
+  descripcion: string | null;
+  monto: string;
+  tarifa: string;
+  no_sujeto: boolean;
+  deducible: boolean;
+  iva: string;
+}
+
+export interface EntradaManualCreate {
+  cliente_id: number;
+  periodo: string;
+  rol: string;
+  descripcion?: string | null;
+  monto: string;
+  tarifa: string;
+  no_sujeto: boolean;
+  deducible: boolean;
+}
+
+export interface EntradasManualesResp {
+  entradas: EntradaManual[];
+  total_monto: string;
+  total_iva: string;
+}
+
+const RESP_VACIA: EntradasManualesResp = { entradas: [], total_monto: '0', total_iva: '0' };
+
+export function useEntradasManuales(clienteId: number | null, periodo: string | null, rol: Rol) {
+  return useQuery({
+    queryKey: ['entradas', clienteId, periodo, rol],
+    enabled: clienteId != null && periodo != null,
+    queryFn: async () =>
+      (await apiFetch<EntradasManualesResp>(
+        '/api/entradas-manuales' + qs({ cliente_id: clienteId!, periodo: periodoApi(periodo!), rol }),
+      )) ?? RESP_VACIA,
+  });
+}
+
+export function useCrearEntrada() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: EntradaManualCreate) =>
+      apiFetch<EntradaManual>('/api/entradas-manuales', { method: 'POST', body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['entradas'] });
+      qc.invalidateQueries({ queryKey: ['d150'] });
+    },
+  });
+}
+
+export function useEditarEntrada() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: EntradaManualCreate }) =>
+      apiFetch<EntradaManual>(`/api/entradas-manuales/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['entradas'] });
+      qc.invalidateQueries({ queryKey: ['d150'] });
+    },
+  });
+}
+
+export function useEliminarEntrada() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id }: { id: number }) =>
+      apiFetch<void>(`/api/entradas-manuales/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['entradas'] });
+      qc.invalidateQueries({ queryKey: ['d150'] });
+    },
   });
 }
 

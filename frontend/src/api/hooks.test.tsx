@@ -3,7 +3,7 @@ import { setupServer } from 'msw/node';
 import { renderHook, waitFor } from '@testing-library/react';
 import { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useClientes, useResumen, useResumenClasificacion, useD150, useCrearCliente, useIngestaLote, useReglas, useEditarRegla, usePreclasificacion } from './hooks';
+import { useClientes, useResumen, useResumenClasificacion, useD150, useCrearCliente, useIngestaLote, useReglas, useEditarRegla, usePreclasificacion, useEntradasManuales } from './hooks';
 
 const server = setupServer();
 beforeAll(() => server.listen());
@@ -163,4 +163,17 @@ it('usePreclasificacion pasa cliente_id/periodo/rol/por', async () => {
 it('usePreclasificacion no dispara sin cliente o período', () => {
   const { result } = renderHook(() => usePreclasificacion(null, '2026-05', 'compra', 'cabys'), { wrapper });
   expect(result.current.fetchStatus).toBe('idle');
+});
+
+it('useEntradasManuales manda periodo=YYYYMM y devuelve entradas+totales', async () => {
+  let url = '';
+  server.use(http.get('*/api/entradas-manuales', ({ request }) => {
+    url = new URL(request.url).search;
+    return HttpResponse.json({ entradas: [{ id: 1, cliente_id: 7, periodo: '202605', rol: 'venta', descripcion: 'Subasta', monto: '2000', tarifa: '13', no_sujeto: false, deducible: true, iva: '260' }], total_monto: '2000', total_iva: '260' });
+  }));
+  const { result } = renderHook(() => useEntradasManuales(7, '2026-05', 'venta'), { wrapper });
+  await waitFor(() => expect(result.current.isSuccess).toBe(true));
+  expect(result.current.data?.entradas[0].iva).toBe('260');
+  expect(result.current.data?.total_iva).toBe('260');
+  expect(url).toContain('periodo=202605');
 });
