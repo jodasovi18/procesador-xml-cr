@@ -77,3 +77,33 @@ def test_crear_entrada_periodo_invalido_422(client, db_session):
     token = _token(client, db_session); cli = _cliente(db_session)
     payload = {"cliente_id": cli.id, "periodo": "202613", "rol": "venta", "monto": "10", "tarifa": "13"}
     assert client.post("/api/entradas-manuales", json=payload, headers=_auth(token)).status_code == 422
+
+def test_editar_entrada(client, db_session):
+    token = _token(client, db_session); cli = _cliente(db_session)
+    eid = client.post("/api/entradas-manuales", json={"cliente_id": cli.id, "periodo": "202605", "rol": "venta",
+                      "descripcion": "Subasta", "monto": "2000", "tarifa": "13"}, headers=_auth(token)).json()["id"]
+    upd = {"cliente_id": cli.id, "periodo": "202605", "rol": "venta", "descripcion": "Subasta corregida",
+           "monto": "3000", "tarifa": "1", "no_sujeto": False, "deducible": True}
+    r = client.put(f"/api/entradas-manuales/{eid}", json=upd, headers=_auth(token))
+    assert r.status_code == 200
+    body = r.json()
+    assert body["id"] == eid
+    assert body["descripcion"] == "Subasta corregida"
+    assert Decimal(body["monto"]) == Decimal("3000")
+    assert Decimal(body["tarifa"]) == Decimal("1")
+    assert Decimal(body["iva"]) == Decimal("30")
+
+def test_editar_entrada_inexistente_404(client, db_session):
+    token = _token(client, db_session); cli = _cliente(db_session)
+    upd = {"cliente_id": cli.id, "periodo": "202605", "rol": "venta", "monto": "1", "tarifa": "13"}
+    assert client.put("/api/entradas-manuales/999999", json=upd, headers=_auth(token)).status_code == 404
+
+def test_editar_entrada_monto_negativo_422(client, db_session):
+    token = _token(client, db_session); cli = _cliente(db_session)
+    eid = client.post("/api/entradas-manuales", json={"cliente_id": cli.id, "periodo": "202605", "rol": "venta",
+                      "monto": "2000", "tarifa": "13"}, headers=_auth(token)).json()["id"]
+    upd = {"cliente_id": cli.id, "periodo": "202605", "rol": "venta", "monto": "-5", "tarifa": "13"}
+    assert client.put(f"/api/entradas-manuales/{eid}", json=upd, headers=_auth(token)).status_code == 422
+
+def test_editar_entrada_sin_token_401(client):
+    assert client.put("/api/entradas-manuales/1", json={"cliente_id": 1, "periodo": "202605", "rol": "venta", "monto": "1", "tarifa": "13"}).status_code == 401

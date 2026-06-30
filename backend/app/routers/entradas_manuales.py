@@ -37,6 +37,24 @@ def listar(cliente_id: int, periodo: str, rol: str | None = None,
     total_iva = sum((iva_entrada(e.monto, e.tarifa) for e in entradas), Decimal("0"))
     return EntradaManualListOut(entradas=entradas, total_monto=str(total_monto), total_iva=str(total_iva))
 
+@router.put("/{entrada_id}", response_model=EntradaManualOut)
+def editar(entrada_id: int, data: EntradaManualCreate, db: Session = Depends(get_db),
+           _: Usuario = Depends(get_current_user)):
+    e = db.get(EntradaManual, entrada_id)
+    if e is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="no existe")
+    # cliente_id no se reasigna.
+    e.periodo = data.periodo
+    e.rol = data.rol
+    e.descripcion = data.descripcion
+    e.monto = data.monto
+    e.tarifa = data.tarifa
+    e.no_sujeto = data.no_sujeto
+    e.deducible = data.deducible
+    db.commit()
+    db.refresh(e)
+    return e
+
 @router.delete("/{entrada_id}", status_code=status.HTTP_204_NO_CONTENT)
 def eliminar(entrada_id: int, db: Session = Depends(get_db),
              _: Usuario = Depends(get_current_user)):
