@@ -7,6 +7,7 @@ from app.routers.reglas import router as reglas_router
 from app.routers.entradas_manuales import router as entradas_manuales_router
 from app.routers.d150 import router as d150_router
 from app.routers.agent_tokens import router as agent_tokens_router
+from app.routers.preclasificacion import router as preclasificacion_router
 
 app = FastAPI(title="Sistema XML")
 app.include_router(auth_router)
@@ -17,6 +18,7 @@ app.include_router(reglas_router)
 app.include_router(entradas_manuales_router)
 app.include_router(d150_router)
 app.include_router(agent_tokens_router)
+app.include_router(preclasificacion_router)
 
 @app.get("/health")
 def health():
