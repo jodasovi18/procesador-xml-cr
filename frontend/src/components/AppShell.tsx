@@ -14,6 +14,7 @@ const LINKS = [
   { to: '/d150', label: 'D-150' },
   { to: '/reglas', label: 'Reglas' },
   { to: '/preclasificar', label: 'Preclasificar' },
+  { to: '/entradas-manuales', label: 'Entradas manuales' },
 ];
 
 function NavItem({ to, label }: { to: string; label: string }) {
