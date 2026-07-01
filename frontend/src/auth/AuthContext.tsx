@@ -7,6 +7,7 @@ interface Me { id: number; nombre: string; es_admin: boolean }
 interface AuthState {
   isAuthenticated: boolean;
   esAdmin: boolean;
+  adminCargando: boolean;
   login: (usuario: string, clave: string) => Promise<void>;
   logout: () => void;
 }
@@ -24,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     enabled: !!token,
   });
   const esAdmin = meQuery.data?.es_admin ?? false;
+  const adminCargando = !!token && meQuery.isPending;
 
   async function login(usuario: string, clave: string) {
     // OAuth2 password flow: form-urlencoded, sin Bearer.
@@ -47,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated: !!token, esAdmin, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated: !!token, esAdmin, adminCargando, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
