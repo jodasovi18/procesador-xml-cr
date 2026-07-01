@@ -1,8 +1,13 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch, setToken, clearToken, getToken, ApiError } from '../api/client';
+
+interface Me { id: number; nombre: string; es_admin: boolean }
 
 interface AuthState {
   isAuthenticated: boolean;
+  esAdmin: boolean;
+  adminCargando: boolean;
   login: (usuario: string, clave: string) => Promise<void>;
   logout: () => void;
 }
@@ -13,6 +18,14 @@ interface TokenResponse { access_token: string }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setTokenState] = useState<string | null>(() => getToken());
+  const qc = useQueryClient();
+  const meQuery = useQuery({
+    queryKey: ['me'],
+    queryFn: () => apiFetch<Me>('/auth/me'),
+    enabled: !!token,
+  });
+  const esAdmin = meQuery.data?.es_admin ?? false;
+  const adminCargando = !!token && meQuery.isPending;
 
   async function login(usuario: string, clave: string) {
     // OAuth2 password flow: form-urlencoded, sin Bearer.
@@ -32,10 +45,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   function logout() {
     clearToken();
     setTokenState(null);
+    qc.removeQueries({ queryKey: ['me'] });
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated: !!token, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated: !!token, esAdmin, adminCargando, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

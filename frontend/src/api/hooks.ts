@@ -348,6 +348,46 @@ export function useEliminarEntrada() {
   });
 }
 
+// ---------------------------------------------------------------------------
+// Agent Tokens types + hooks
+// ---------------------------------------------------------------------------
+
+export interface AgentToken {
+  id: number;
+  label: string;
+  created_at: string;
+}
+
+export interface AgentTokenCreado {
+  id: number;
+  label: string;
+  token: string;
+}
+
+export function useAgentTokens() {
+  return useQuery({
+    queryKey: ['agent-tokens'],
+    queryFn: async () => (await apiFetch<AgentToken[]>('/api/agent-tokens')) ?? [],
+  });
+}
+
+export function useCrearAgentToken() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (label: string) =>
+      apiFetch<AgentTokenCreado>('/api/agent-tokens', { method: 'POST', body: JSON.stringify({ label }) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['agent-tokens'] }),
+  });
+}
+
+export function useRevocarAgentToken() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiFetch<void>(`/api/agent-tokens/${id}`, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['agent-tokens'] }),
+  });
+}
+
 /**
  * Sube un lote de archivos XML/ZIP.
  * Devuelve el `LoteResponse` completo: totales (total/nuevos/actualizados/omitidos/errores)

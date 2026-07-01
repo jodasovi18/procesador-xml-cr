@@ -25,8 +25,10 @@ function NavItem({ to, label }: { to: string; label: string }) {
 export function AppShell({ children }: { children: ReactNode }) {
   const { clienteId, periodo, rol, setClienteId, setPeriodo, setRol } = useSeleccion();
   const { data: clientes } = useClientes();
-  const { logout } = useAuth();
+  const { logout, esAdmin } = useAuth();
   const navigate = useNavigate();
+
+  const links = esAdmin ? [...LINKS, { to: '/agent-tokens', label: 'Tokens de agente' }] : LINKS;
 
   return (
     <MantineAppShell header={{ height: 60 }} navbar={{ width: 200, breakpoint: 'sm' }} padding="md">
@@ -60,7 +62,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </Group>
       </MantineAppShell.Header>
       <MantineAppShell.Navbar p="xs">
-        {LINKS.map((l) => <NavItem key={l.to} to={l.to} label={l.label} />)}
+        {links.map((l) => <NavItem key={l.to} to={l.to} label={l.label} />)}
       </MantineAppShell.Navbar>
       <MantineAppShell.Main>{children}</MantineAppShell.Main>
     </MantineAppShell>

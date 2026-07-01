@@ -9,6 +9,8 @@ import { D150Page } from './pages/D150Page';
 import { ReglasPage } from './pages/ReglasPage';
 import { PreclasificarPage } from './pages/PreclasificarPage';
 import { EntradasManualesPage } from './pages/EntradasManualesPage';
+import { AgentTokensPage } from './pages/AgentTokensPage';
+import { RequireAdmin } from './auth/RequireAdmin';
 
 export function App() {
   return (
@@ -27,6 +29,7 @@ export function App() {
                 <Route path="/reglas" element={<ReglasPage />} />
                 <Route path="/preclasificar" element={<PreclasificarPage />} />
                 <Route path="/entradas-manuales" element={<EntradasManualesPage />} />
+                <Route path="/agent-tokens" element={<RequireAdmin><AgentTokensPage /></RequireAdmin>} />
                 <Route path="*" element={<Navigate to="/clientes" replace />} />
               </Routes>
             </AppShell>
