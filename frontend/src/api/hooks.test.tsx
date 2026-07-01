@@ -3,7 +3,7 @@ import { setupServer } from 'msw/node';
 import { renderHook, waitFor } from '@testing-library/react';
 import { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useClientes, useResumen, useResumenClasificacion, useD150, useCrearCliente, useIngestaLote, useReglas, useEditarRegla, usePreclasificacion, useEntradasManuales } from './hooks';
+import { useClientes, useResumen, useResumenClasificacion, useD150, useCrearCliente, useIngestaLote, useReglas, useEditarRegla, usePreclasificacion, useEntradasManuales, useAgentTokens, useCrearAgentToken } from './hooks';
 
 const server = setupServer();
 beforeAll(() => server.listen());
@@ -176,4 +176,23 @@ it('useEntradasManuales manda periodo=YYYYMM y devuelve entradas+totales', async
   expect(result.current.data?.entradas[0].iva).toBe('260');
   expect(result.current.data?.total_iva).toBe('260');
   expect(url).toContain('periodo=202605');
+});
+
+it('useAgentTokens lista los tokens', async () => {
+  server.use(http.get('*/api/agent-tokens', () =>
+    HttpResponse.json([{ id: 1, label: 'PC-01', created_at: '2026-05-12T09:14:00Z' }])));
+  const { result } = renderHook(() => useAgentTokens(), { wrapper });
+  await waitFor(() => expect(result.current.isSuccess).toBe(true));
+  expect(result.current.data?.[0].label).toBe('PC-01');
+});
+
+it('useCrearAgentToken devuelve el token en claro', async () => {
+  server.use(http.post('*/api/agent-tokens', async ({ request }) => {
+    const b = (await request.json()) as { label: string };
+    return HttpResponse.json({ id: 2, label: b.label, token: 'sxk_secreto' }, { status: 201 });
+  }));
+  const { result } = renderHook(() => useCrearAgentToken(), { wrapper });
+  const creado = await result.current.mutateAsync('Agente nuevo');
+  expect(creado?.token).toBe('sxk_secreto');
+  expect(creado?.label).toBe('Agente nuevo');
 });
