@@ -28,6 +28,7 @@ it('crear muestra el token revelado una vez', async () => {
   await userEvent.type(await screen.findByLabelText('Etiqueta'), 'Agente nuevo');
   await userEvent.click(screen.getByRole('button', { name: 'Crear token' }));
   expect(await screen.findByText('sxk_secreto_123')).toBeInTheDocument();
+  expect(screen.getByLabelText('Etiqueta')).toHaveValue('');
 });
 
 it('revoca un token con DELETE al id tras confirmar', async () => {

@@ -12,7 +12,8 @@ export function AgentTokensPage() {
   const [creadoToken, setCreadoToken] = useState<string | null>(null);
   const [aRevocar, setARevocar] = useState<AgentToken | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const form = useForm({ initialValues: { label: '' } });
+  const [errorRevocar, setErrorRevocar] = useState<string | null>(null);
+  const form = useForm({ initialValues: { label: '' }, validate: { label: (v: string) => (v.trim() ? null : 'Requerido') } });
 
   async function onSubmit(values: { label: string }) {
     setError(null);
@@ -27,10 +28,12 @@ export function AgentTokensPage() {
 
   async function confirmarRevocar() {
     if (!aRevocar) return;
+    setErrorRevocar(null);
     try {
       await revocar.mutateAsync(aRevocar.id);
-    } finally {
       setARevocar(null);
+    } catch (e) {
+      setErrorRevocar(e instanceof ApiError ? e.detail : 'Error al revocar');
     }
   }
 
@@ -77,15 +80,17 @@ export function AgentTokensPage() {
               <Table.Td>{t.label}</Table.Td>
               <Table.Td>{dayjs(t.created_at).format('YYYY-MM-DD HH:mm')}</Table.Td>
               <Table.Td>
-                <Button variant="subtle" color="red" size="xs" onClick={() => setARevocar(t)}>Revocar</Button>
+                <Button variant="subtle" color="red" size="xs" onClick={() => { setErrorRevocar(null); setARevocar(t); }}>Revocar</Button>
               </Table.Td>
             </Table.Tr>
           ))}
         </Table.Tbody>
       </Table>
+      {tokens.length === 0 && <Text c="dimmed">No hay tokens creados.</Text>}
 
-      <Modal opened={aRevocar !== null} onClose={() => setARevocar(null)} title="Revocar token">
+      <Modal opened={aRevocar !== null} onClose={() => { setARevocar(null); setErrorRevocar(null); }} title="Revocar token">
         <Text>¿Revocar el token "{aRevocar?.label}"? El agente que lo use dejará de funcionar.</Text>
+        {errorRevocar && <Alert color="red">{errorRevocar}</Alert>}
         <Group justify="flex-end" mt="md">
           <Button variant="default" onClick={() => setARevocar(null)}>Cancelar</Button>
           <Button color="red" loading={revocar.isPending} onClick={confirmarRevocar}>Revocar</Button>
