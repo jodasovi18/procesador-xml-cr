@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useSeleccion, Rol } from '../context/SeleccionContext';
 import { usePreclasificacion, useCrearRegla, PorPreclasificacion, ReglaCreate } from '../api/hooks';
 import { formatColones } from '../lib/money';
+import { mensajeSeleccion } from '../lib/seleccion';
 
 // Mantener en sync con ReglasPage.tsx — extraer a un módulo de constantes si aparece un tercer consumidor.
 const CLASIFICACIONES = ['Compras', 'Gastos', 'Bienes de Capital', 'No Deducibles', 'Sin Clasificar'];
@@ -122,8 +123,8 @@ function Panel({ por, clienteId, periodo, rol }: { por: PorPreclasificacion; cli
 
 export function PreclasificarPage() {
   const { clienteId, periodo, rol } = useSeleccion();
-  if (clienteId == null || periodo == null)
-    return <Alert color="yellow">Elegí cliente y período en la barra superior.</Alert>;
+  const aviso = mensajeSeleccion(clienteId, periodo, true);
+  if (aviso) return <Alert color="yellow">{aviso}</Alert>;
   return (
     <Stack>
       <Title order={2}>Preclasificar</Title>
@@ -133,10 +134,10 @@ export function PreclasificarPage() {
           <Tabs.Tab value="cedula">Por proveedor</Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="cabys" pt="md">
-          <Panel por="cabys" clienteId={clienteId} periodo={periodo} rol={rol} />
+          <Panel por="cabys" clienteId={clienteId!} periodo={periodo!} rol={rol} />
         </Tabs.Panel>
         <Tabs.Panel value="cedula" pt="md">
-          <Panel por="cedula" clienteId={clienteId} periodo={periodo} rol={rol} />
+          <Panel por="cedula" clienteId={clienteId!} periodo={periodo!} rol={rol} />
         </Tabs.Panel>
       </Tabs>
     </Stack>

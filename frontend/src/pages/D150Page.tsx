@@ -12,6 +12,7 @@ import {
 import { useSeleccion } from '../context/SeleccionContext';
 import { useD150, type D150Shape } from '../api/hooks';
 import { formatColones } from '../lib/money';
+import { mensajeSeleccion } from '../lib/seleccion';
 
 // ---------------------------------------------------------------------------
 // Rendering helpers
@@ -83,11 +84,8 @@ export function D150Page() {
   const { data, isLoading, isError, refetch } = useD150(clienteId, periodo);
   const [vista, setVista] = useState<'preciso' | 'ovi'>('preciso');
 
-  if (clienteId == null || periodo == null) {
-    return (
-      <Alert color="yellow">Elegí cliente y período en la barra superior.</Alert>
-    );
-  }
+  const aviso = mensajeSeleccion(clienteId, periodo, true);
+  if (aviso) return <Alert color="yellow">{aviso}</Alert>;
   if (isLoading) return <Loader />;
   if (isError) {
     return (

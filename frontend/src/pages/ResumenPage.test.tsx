@@ -28,6 +28,11 @@ it('pide elegir cliente/período cuando no hay selección', () => {
   expect(screen.getByText('Elegí cliente y período en la barra superior.')).toBeInTheDocument();
 });
 
+it('con cliente pero sin período, pide el período (no el cliente)', () => {
+  renderWithProviders(<SeleccionProvider initialClienteId={1}><ResumenPage /></SeleccionProvider>);
+  expect(screen.getByText('Elegí un período en la barra superior.')).toBeInTheDocument();
+});
+
 it('muestra la clasificación formateada al cambiar de tab', async () => {
   renderWithProviders(
     <SeleccionProvider initialClienteId={1} initialPeriodo="2026-05"><ResumenPage /></SeleccionProvider>
