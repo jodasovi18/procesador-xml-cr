@@ -4,6 +4,7 @@ import { useForm } from '@mantine/form';
 import { useSeleccion } from '../context/SeleccionContext';
 import { useReglas, useCrearRegla, useEditarRegla, useEliminarRegla, Regla, ReglaCreate } from '../api/hooks';
 import { ApiError } from '../api/client';
+import { mensajeSeleccion } from '../lib/seleccion';
 
 const CLASIFICACIONES = ['Compras', 'Gastos', 'Bienes de Capital', 'No Deducibles', 'Sin Clasificar'];
 const ROLES = [
@@ -94,7 +95,8 @@ export function ReglasPage() {
     }
   }
 
-  if (clienteId == null) return <Alert color="yellow">Elegí un cliente en la barra superior.</Alert>;
+  const aviso = mensajeSeleccion(clienteId, null, false);
+  if (aviso) return <Alert color="yellow">{aviso}</Alert>;
   if (isLoading) return <Loader />;
   if (isError)
     return (

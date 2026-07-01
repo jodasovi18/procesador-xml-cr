@@ -8,6 +8,7 @@ import {
 } from '../api/hooks';
 import { ApiError } from '../api/client';
 import { formatColones } from '../lib/money';
+import { mensajeSeleccion } from '../lib/seleccion';
 
 interface FormValues {
   descripcion: string;
@@ -81,8 +82,8 @@ export function EntradasManualesPage() {
     }
   }
 
-  if (clienteId == null || periodo == null)
-    return <Alert color="yellow">Elegí cliente y período en la barra superior.</Alert>;
+  const aviso = mensajeSeleccion(clienteId, periodo, true);
+  if (aviso) return <Alert color="yellow">{aviso}</Alert>;
   if (isLoading) return <Loader />;
   if (isError)
     return <Alert color="red">Error al cargar <Button size="xs" onClick={() => refetch()}>Reintentar</Button></Alert>;

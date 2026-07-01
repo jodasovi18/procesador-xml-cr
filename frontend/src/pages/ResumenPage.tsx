@@ -2,6 +2,7 @@ import { Stack, Title, Tabs, Table, Alert, Loader, Button } from '@mantine/core'
 import { useSeleccion, Rol } from '../context/SeleccionContext';
 import { useResumen, useResumenClasificacion } from '../api/hooks';
 import { formatColones } from '../lib/money';
+import { mensajeSeleccion } from '../lib/seleccion';
 
 function TablaCategoria({ clienteId, periodo, rol }: { clienteId: number | null; periodo: string | null; rol: Rol }) {
   const { data, isLoading, isError, refetch } = useResumen(clienteId, periodo, rol);
@@ -43,8 +44,8 @@ function TablaClasificacion({ clienteId, periodo, rol }: { clienteId: number | n
 
 export function ResumenPage() {
   const { clienteId, periodo, rol } = useSeleccion();
-  if (clienteId == null || periodo == null)
-    return <Alert color="yellow">Elegí cliente y período en la barra superior.</Alert>;
+  const aviso = mensajeSeleccion(clienteId, periodo, true);
+  if (aviso) return <Alert color="yellow">{aviso}</Alert>;
   return (
     <Stack>
       <Title order={2}>Resumen</Title>
