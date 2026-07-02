@@ -38,6 +38,7 @@ Hecho: **1A** backend (auth + CRUD clientes), **1B-1** parser, **1B-2** tarifa+t
 
 **Próximo:** reconciliación completa de compras + D-150 contra el oracle real (Agrofinca/Solis Feb 2026 en `run_d150_oracle.py`) cuando estén las reglas/manuales reales → **1D** frontend (incl. CRUD completo de reglas + auto-preclasificación por CABYS + edición de entradas manuales, diferidos) → **1E** reportes Excel/PDF. Diferidos del agente: keyring para el token, firma de código del `.exe`/MSI, correr como servicio. Diferidos del D-150: **prorrata** de crédito por uso mixto (hoy crédito pleno, fiel al sistema viejo), entradas manuales en la vista de clasificación.
 
-## TODO de seguridad antes de desplegar
-- Exigir `JWT_SECRET` desde el entorno (rechazar el default `dev-secret-change-me`, mínimo 32 chars).
-- Validar los dominios de `tipo_cedula` / `regimen` en los schemas.
+## Seguridad
+- **Hecho:** `JWT_SECRET` exigido en producción — con `ENV=production`, `config.py` rechaza el default y secretos <32 chars al arrancar.
+- **Hecho:** dominios validados en `schemas/cliente.py` — `tipo_cedula` ∈ {fisica, juridica, dimex, nite}, `regimen` ∈ {tradicional, simplificado} (422 si no).
+- **Producción:** setear `ENV=production` y `JWT_SECRET` (≥32 chars) en el entorno. Pendiente (fase de deploy): CORS/headers, servir el build del frontend, migraciones en prod, Postgres administrado + backups, HTTPS.
