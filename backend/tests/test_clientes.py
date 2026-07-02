@@ -33,3 +33,24 @@ def test_cedula_duplicada_409(client, db_session):
 
 def test_listar_sin_token_401(client):
     assert client.get("/api/clientes").status_code == 401
+
+
+def test_crear_cliente_tipo_cedula_invalido_422(client, db_session):
+    token = _token(client, db_session)
+    payload = {"cedula": "3101777777", "nombre": "X S.A.", "tipo_cedula": "foo", "regimen": "tradicional"}
+    assert client.post("/api/clientes", json=payload, headers=_auth(token)).status_code == 422
+
+
+def test_crear_cliente_regimen_invalido_422(client, db_session):
+    token = _token(client, db_session)
+    payload = {"cedula": "3101777778", "nombre": "Y S.A.", "tipo_cedula": "juridica", "regimen": "foo"}
+    assert client.post("/api/clientes", json=payload, headers=_auth(token)).status_code == 422
+
+
+def test_crear_cliente_dimex_simplificado_201(client, db_session):
+    token = _token(client, db_session)
+    payload = {"cedula": "155812345678", "nombre": "Z", "tipo_cedula": "dimex", "regimen": "simplificado"}
+    r = client.post("/api/clientes", json=payload, headers=_auth(token))
+    assert r.status_code == 201
+    assert r.json()["tipo_cedula"] == "dimex"
+    assert r.json()["regimen"] == "simplificado"
